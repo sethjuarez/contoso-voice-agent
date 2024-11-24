@@ -3,7 +3,7 @@
 import styles from "./voice.module.css";
 import { useRef, useState } from "react";
 import { HiOutlinePhone } from "react-icons/hi2";
-import { API_WS_ENDPOINT } from "@/store/endpoint";
+import { WS_ENDPOINT } from "@/store/endpoint";
 import { WebSocketClient } from "@/socket/websocket-client";
 import { Player, Recorder } from "@/audio";
 import { Message } from "@/socket/types";
@@ -52,8 +52,11 @@ const Voice = () => {
   const startRealtime = async () => {
     if (!socket.current) {
       console.log("Starting realtime");
+      const endpoint = WS_ENDPOINT.endsWith("/")
+        ? WS_ENDPOINT
+        : WS_ENDPOINT + "/";
       socket.current = new WebSocketClient<Message, Message>(
-        `${API_WS_ENDPOINT}/api/voice`
+        `${endpoint}/api/voice`
       );
       player.current = new Player();
       await player.current.init(24000);

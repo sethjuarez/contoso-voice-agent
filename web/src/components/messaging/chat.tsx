@@ -12,7 +12,7 @@ import usePersistStore from "@/store/usePersistStore";
 import FileImagePicker from "./fileimagepicker";
 import { fetchCachedImage, removeCachedBlob } from "@/store/images";
 import VideoImagePicker from "./videoimagepicker";
-import { API_WS_ENDPOINT } from "@/store/endpoint";
+import { WS_ENDPOINT } from "@/store/endpoint";
 import {
   Action,
   Assistant,
@@ -220,9 +220,9 @@ const Chat = ({ options }: Props) => {
 
   const createSocket = (threadId: string) => {
     console.log("Starting Socket (" + threadId + ")");
-    const endpoint = API_WS_ENDPOINT.endsWith("/")
-      ? API_WS_ENDPOINT
-      : API_WS_ENDPOINT + "/";
+    const endpoint = WS_ENDPOINT.endsWith("/")
+      ? WS_ENDPOINT
+      : WS_ENDPOINT + "/";
     server.current = new SocketServer(endpoint + "api/concierge/ws", threadId,  () => setConnected(true), () => setConnected(false));;
     server.current.addListener("chat", serverCallback);
   };

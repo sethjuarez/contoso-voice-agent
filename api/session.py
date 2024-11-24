@@ -20,6 +20,7 @@ class RealtimeSession:
         self.client: WebSocket = client
 
     async def send_message(self, message: Message):
+        #print("sending message", message.model_dump_json())
         await self.client.send_json(message.model_dump())
 
     async def send_audio(self, audio: Message):
@@ -32,9 +33,11 @@ class RealtimeSession:
     async def send_realtime_instructions(self, instructions: str):
         await self.realtime.send_session_update(instructions)
 
-    async def start_realtime(self):
+    async def receive_realtime(self):
         while self.realtime != None and not self.realtime.closed:
+            print("waiting for message")
             async for message in self.realtime.receive_message():
+                print("received message", message.type)
                 if message is None:
                     continue
 
@@ -79,11 +82,13 @@ class RealtimeSession:
 
         self.realtime = None
 
-    async def receive_from_client(self):
+    async def receive_client(self):
         while self.client.client_state != WebSocketState.DISCONNECTED:
             message = await self.client.receive_text()
+            
             message_json = json.loads(message)
             m =  Message(**message_json)
+            #print("received message", m.type)
             match m.type:
                 case "audio":
                     await self.realtime.send_audio_message(m.payload)

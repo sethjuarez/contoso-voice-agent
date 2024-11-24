@@ -1,0 +1,52 @@
+.innerBlock {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 3rem;
+}
+
+.baricon {
+  color: var(--color-zinc-800);
+}
+.grow {
+  flex-grow: 1;
+}
+
+.user {
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.username {
+  font-weight: 600;
+  text-align: right;
+  color: var(--color-zinc-600);
+}
+
+.email {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  text-align: right;
+  color: var(--color-zinc-400);
+}
+
+.userIcon {
+  border-radius: 50%;
+}
+
+.categories {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-left: 24px;
+  align-items: center;
+  justify-content: center;
+}
+
+.category {
+  font-size: 1rem;
+  line-height: 1rem;
+  color: var(--color-zinc-400);
+}

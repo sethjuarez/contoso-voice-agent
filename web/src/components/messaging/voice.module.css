@@ -1,0 +1,33 @@
+.voice {
+  display: flex;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+  margin-left: 2rem;
+  margin-bottom: 2rem;
+  flex-direction: column;
+  align-items: flex-end;
+  z-index: 10;
+}
+
+.voiceButton {
+  background-color: var(--color-zinc-100);
+  color: var(--color-zinc-800);
+  border: solid 1px var(--color-zinc-300);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  user-select: none;
+}
+
+.voiceOn {
+  background-color: var(--color-red-100);
+  color: var(--color-red-800);
+  border: solid 1px var(--color-red-300);
+}

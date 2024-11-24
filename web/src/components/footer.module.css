@@ -1,0 +1,59 @@
+.outerBlock {
+  margin-top: 20px;
+}
+
+.innerBlock {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  border-top: solid 1px var(--color-zinc-200);
+  gap: 50px;
+}
+
+.grow {
+  flex-grow: 1;
+}
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.innerCategory {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category {
+  font-size: 1rem;
+  line-height: 1rem;
+  color: var(--color-zinc-400);
+}
+
+.baricon {
+  color: var(--color-zinc-200);
+  margin-right: 12px;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.icon {
+  color: var(--color-zinc-400);
+}
+
+.company {
+  font-weight: 700;
+  margin-top: 11px;
+  font-size: 18px;
+  line-height: 1rem;
+  color: var(--color-zinc-400);
+}

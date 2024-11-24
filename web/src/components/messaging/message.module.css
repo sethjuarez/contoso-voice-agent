@@ -1,0 +1,64 @@
+.messageContainerUser {
+  display: flex;
+  justify-content: space-between;
+  align-items: self-start;
+  padding: 0 12px 0;
+  gap: 10px;
+  margin-left: 16px;
+}
+
+.messageContainerAssistant {
+  display: flex;
+  justify-content: space-between;
+  align-items: self-start;
+  padding: 0 12px 0;
+  gap: 10px;
+  flex-direction: row-reverse;
+  margin-right: 16px;
+}
+.messageUser {
+  padding: 12px;
+  background-color: var(--color-sky-600);
+  border-radius: 12px;
+  color: white;
+  flex-grow: 1;
+}
+
+.messageAssistant {
+  padding: 12px;
+  background-color: var(--color-zinc-200);
+  border-radius: 12px;
+  flex-grow: 1;
+}
+
+.userIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+
+.assistantIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-image: url("/images/trees.png");
+  background-size: cover;
+  background-blend-mode: multiply;
+  background-color: var(--color-sky-50);
+  color: var(--color-zinc-50);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px;
+}
+
+.messageImage {
+  object-fit: contain;
+  border-radius: 12px;
+  width: 100%;
+  height: 100%;
+}
+
+.audioIcon {
+  float: right;
+}

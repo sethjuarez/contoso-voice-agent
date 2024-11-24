@@ -67,13 +67,13 @@ async def voice_endpoint(websocket: WebSocket):
             key_credential=AzureKeyCredential(AZURE_VOICE_KEY),
             azure_deployment="gpt-4o-realtime-preview",
         ) as rt:
-            session = RealtimeSession(RealtimeVoiceClient(rt), websocket)
+            session = RealtimeSession(RealtimeVoiceClient(rt, verbose=True), websocket)
             await session.send_realtime_instructions(prompt)
             tasks = [
-                asyncio.create_task(session.start_realtime()),
-                asyncio.create_task(session.receive_from_client())
+                asyncio.create_task(session.receive_realtime()),
+                asyncio.create_task(session.receive_client()),
             ]
             await asyncio.gather(*tasks)
 
     except WebSocketDisconnect as e:
-        print(e)
+        print("Socket Disconnected", e)

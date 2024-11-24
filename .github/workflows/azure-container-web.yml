@@ -1,4 +1,4 @@
-name: Build and deploy contoso-carousel-web
+name: Build and deploy contoso-voice-web
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  ROOT_NAME: contoso-carousel
+  ROOT_NAME: contoso-voice
 
 jobs:
   build-and-deploy-ui:

@@ -1,11 +1,11 @@
-name: Build and deploy contoso-carousel-api
+name: Build and deploy contoso-voice-api
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'api/**'
+      - "api/**"
   workflow_dispatch:
 
 permissions:
@@ -13,56 +13,56 @@ permissions:
   contents: read
 
 env:
-  ROOT_NAME: contoso-carousel
+  ROOT_NAME: contoso-voice
 
 jobs:
   build-and-deploy-api:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - name: Create tag
-      run: |
-        echo "TAG=v$(date +%Y%m%d.%H%M%S)" >> "$GITHUB_ENV"
-        echo "Using tag: ${TAG}"
+      - uses: actions/checkout@v4
+      - name: Create tag
+        run: |
+          echo "TAG=v$(date +%Y%m%d.%H%M%S)" >> "$GITHUB_ENV"
+          echo "Using tag: ${TAG}"
 
-    - name: Log in to Azure
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Log in to registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ secrets.REGISTRY_ENDPOINT }}
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_ENDPOINT }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Build and push container
-      run: |
-        cd api
-        docker build . -t ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-api:latest --build-arg GIT_VERSION_TAG=${TAG}
-        docker push ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-api:latest
+      - name: Build and push container
+        run: |
+          cd api
+          docker build . -t ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-api:latest --build-arg GIT_VERSION_TAG=${TAG}
+          docker push ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-api:latest
 
-    - name: Push Container
-      run: |
-        az containerapp up --name $ROOT_NAME-api \
-                            --image ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-api:latest \
-                            --ingress external \
-                            --target-port 8000 \
-                            --resource-group contoso-concierge \
-                            --registry-server ${{ secrets.REGISTRY_ENDPOINT }} \
-                            --registry-username ${{ secrets.REGISTRY_USERNAME }} \
-                            --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
-                            --environment contoso-concierge-env \
-                            --workload-profile-name heavy-workload \
-                            --env-vars "APP_VERSION=${TAG}" \
-                              "AZURE_OPENAI_ENDPOINT=secretref:azure-openai-endpoint" \
-                              "AZURE_OPENAI_API_KEY=secretref:azure-openai-api-key" \
-                              "AZURE_VOICE_ENDPOINT=secretref:azure-voice-endpoint" \
-                              "AZURE_VOICE_KEY=secretref:azure-voice-key"
+      - name: Push Container
+        run: |
+          az containerapp up --name $ROOT_NAME-api \
+                              --image ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-api:latest \
+                              --ingress external \
+                              --target-port 8000 \
+                              --resource-group contoso-concierge \
+                              --registry-server ${{ secrets.REGISTRY_ENDPOINT }} \
+                              --registry-username ${{ secrets.REGISTRY_USERNAME }} \
+                              --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+                              --environment contoso-concierge-env \
+                              --workload-profile-name heavy-workload \
+                              --env-vars "APP_VERSION=${TAG}" \
+                                "AZURE_OPENAI_ENDPOINT=secretref:azure-openai-endpoint" \
+                                "AZURE_OPENAI_API_KEY=secretref:azure-openai-api-key" \
+                                "AZURE_VOICE_ENDPOINT=secretref:azure-voice-endpoint" \
+                                "AZURE_VOICE_KEY=secretref:azure-voice-key"
 
-    - name: Logout
-      run: |
-        az logout
+      - name: Logout
+        run: |
+          az logout

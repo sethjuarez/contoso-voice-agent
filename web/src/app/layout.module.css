@@ -1,0 +1,7 @@
+.version {
+  color: var(--color-zinc-400);
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  opacity: 0.5;
+}

@@ -1,0 +1,69 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "talk",
+      "description": "Respond to user in casual conversation tone.",
+      "parameters": {
+        "type": "object",
+        "required": [
+          "utterance"
+        ],
+        "properties": {
+          "utterance": {
+            "description": "The response to user",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "wrap_up",
+      "description": "Select the front and center item in the carousel and start customizing the controller.",
+      "parameters": {
+        "type": "object",
+        "required": [
+          "compliment",
+          "nextStep"
+        ],
+        "properties": {
+          "compliment": {
+            "type": "string",
+            "description": "Compliment the user on their choice"
+          },
+          "nextStep": {
+            "type": "string",
+            "description": "Tell user it's time to customize the controller"
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "change_focus",
+      "description": "Move the focus to a different item in the carousel.",
+      "parameters": {
+        "type": "object",
+        "required": [
+          "introduction",
+          "newFocusId"
+        ],
+        "properties": {
+          "introduction": {
+            "type": "string",
+            "description": "One sentence describing what you are showing"
+          },
+          "newFocusId": {
+            "type": "string",
+            "description": "Id of the product to focus on"
+          }
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,8 @@
+fastapi[standard]
+websockets
+python-dotenv
+prompty[azure,serverless]==0.1.39
+opentelemetry-instrumentation
+azure-monitor-opentelemetry-exporter
+opentelemetry-instrumentation-fastapi
+./whl/rtclient-0.5.2-py3-none-any.whl

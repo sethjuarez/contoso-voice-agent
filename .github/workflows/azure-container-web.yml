@@ -1,0 +1,90 @@
+name: Build and deploy contoso-carousel-web
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/**'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ROOT_NAME: contoso-carousel
+
+jobs:
+  build-and-deploy-ui:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Create tag
+      run: |
+        echo "TAG=v$(date +%Y%m%d.%H%M%S)" >> "$GITHUB_ENV"
+        echo "Using tag: ${TAG}"
+
+    - name: Log in to Azure
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: retrieve api endpoint
+      id: retrieve-api-endpoint
+      run: |
+        echo "API_ENDPOINT=$(az containerapp show --name $ROOT_NAME-api -g contoso-concierge --query properties.configuration.ingress.fqdn | tr -d '"')" >> "$GITHUB_ENV"
+
+    - name: rewrite endpoint location
+      run: |
+        echo "export const WS_ENDPOINT = 'wss://$API_ENDPOINT';" > web/src/endpoint.ts
+        echo "export const API_ENDPOINT = 'https://$API_ENDPOINT';" >> web/src/endpoint.ts
+
+        cat web/src/endpoint.ts
+
+    - name: rewrite version
+      run: |
+        echo "export const version = '$TAG';" > web/src/version.ts
+        cat web/src/version.ts
+
+    - name: Log in to registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ secrets.REGISTRY_ENDPOINT }}
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Build and push container
+      run: |
+        cd web
+        docker build . -t ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-web:latest --build-arg GIT_VERSION_TAG=latest
+        docker push ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-web:latest
+
+    
+
+    - name: Push Container
+      run: |
+        az containerapp up --name $ROOT_NAME-web \
+                            --image ${{ secrets.REGISTRY_ENDPOINT }}/$ROOT_NAME-web:latest \
+                            --ingress external \
+                            --target-port 80 \
+                            --resource-group contoso-concierge \
+                            --registry-server ${{ secrets.REGISTRY_ENDPOINT }} \
+                            --registry-username ${{ secrets.REGISTRY_USERNAME }} \
+                            --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+                            --environment  contoso-concierge-env \
+                            --env-vars "APP_VERSION=${TAG}"
+
+        az containerapp update --name $ROOT_NAME-web \
+                                --resource-group contoso-concierge \
+                                --min-replicas 1 \
+                                --max-replicas 5 \
+                                --scale-rule-name azure-http-rule \
+                                --scale-rule-type http \
+                                --scale-rule-http-concurrency 100
+
+    - name: Logout
+      run: |
+        az logout

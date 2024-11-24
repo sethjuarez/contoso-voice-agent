@@ -4,8 +4,8 @@ from pydantic import BaseModel
 from prompty.tracer import trace, Tracer, PromptyTracer
 
 
-#local_trace = PromptyTracer()
-#Tracer.add("local", local_trace.tracer)
+# local_trace = PromptyTracer()
+# Tracer.add("local", local_trace.tracer)
 
 actions_prompty = prompty.load("actions.prompty")
 

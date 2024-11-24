@@ -85,8 +85,6 @@ const Chat = ({ options }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.threadId]);
 
-
-
   /** Current State */
   useEffect(() => {
     stateRef.current = state;
@@ -159,12 +157,11 @@ const Chat = ({ options }: Props) => {
     // assistant messaging work
     if (stateRef.current && data.type === "assistant") {
       const payload = data.payload as Assistant;
-      
+
       if (payload.state === "start") {
         console.log("Assistant Payload", payload);
         stateRef.current.startAssistantMessage(AssistantName);
       } else if (payload.state === "stream") {
-        
         stateRef.current.streamAssistantMessage(payload.payload || "");
       } else if (payload.state === "complete") {
         console.log("Assistant Payload", payload);
@@ -223,7 +220,12 @@ const Chat = ({ options }: Props) => {
     const endpoint = WS_ENDPOINT.endsWith("/")
       ? WS_ENDPOINT
       : WS_ENDPOINT + "/";
-    server.current = new SocketServer(endpoint + "api/concierge/ws", threadId,  () => setConnected(true), () => setConnected(false));;
+    server.current = new SocketServer(
+      endpoint + "api/concierge/ws",
+      threadId,
+      () => setConnected(true),
+      () => setConnected(false)
+    );
     server.current.addListener("chat", serverCallback);
   };
 
@@ -232,8 +234,7 @@ const Chat = ({ options }: Props) => {
     session && session.resetSession();
     context && context.clearContext();
     summary && summary.clearContent();
-    if(server.current && server.current.ready)
-    {
+    if (server.current && server.current.ready) {
       server.current.close();
       server.current = null;
     }

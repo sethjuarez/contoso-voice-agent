@@ -78,7 +78,7 @@ jobs:
                             --env-vars "APP_VERSION=${TAG}"
 
         az containerapp update --name $ROOT_NAME-web \
-                                --resource-group $ROOT_NAME \
+                                --resource-group contoso-concierge \
                                 --min-replicas 1 \
                                 --max-replicas 5 \
                                 --scale-rule-name azure-http-rule \

@@ -6,8 +6,9 @@
   z-index: 10;
   margin-left: 2rem;
   margin-bottom: 2rem;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
   z-index: 10;
 }
 
@@ -30,4 +31,23 @@
   background-color: var(--color-red-100);
   color: var(--color-red-800);
   border: solid 1px var(--color-red-300);
+}
+
+.settingsButton {
+  background-color: var(--color-zinc-100);
+  color: var(--color-zinc-400);
+  border: solid 1px var(--color-zinc-300);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  user-select: none;
+}
+
+.settingsOn {
+  color: var(--color-zinc-800);
 }

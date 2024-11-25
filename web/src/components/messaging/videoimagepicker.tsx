@@ -38,7 +38,7 @@ const VideoImagePicker = ({ setCurrentImage }: Props) => {
     const devices = await getDevices();
     if (!devices) return null;
 
-    const device = localStorage.getItem("selected-device");
+    const device = localStorage.getItem("selected-video-device");
 
     if (device) {
       const parsedDevice = JSON.parse(device);
@@ -47,7 +47,7 @@ const VideoImagePicker = ({ setCurrentImage }: Props) => {
         return dvc;
       } else {
         // remove selected device if not found (bad entry)
-        localStorage.removeItem("selected-device");
+        localStorage.removeItem("selected-video-device");
         return devices?.[0];
       }
     } else {
@@ -104,7 +104,7 @@ const VideoImagePicker = ({ setCurrentImage }: Props) => {
     if (selectedDevice) {
       startVideo(selectedDevice.deviceId);
       localStorage.setItem(
-        "selected-device",
+        "selected-video-device",
         JSON.stringify({ deviceId: selectedDevice.deviceId })
       );
     }

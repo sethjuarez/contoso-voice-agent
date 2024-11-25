@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { v4 as uuidv4 } from "uuid";
 import { removeCachedBlob } from "./images";
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -14,6 +15,7 @@ export interface Turn {
 }
 
 export interface ChatState {
+  threadId: string;
   open: boolean;
   turns: Turn[];
   message: string;
@@ -36,12 +38,14 @@ export interface ChatState {
   ) => void;
   streamAssistantMessage: (chunk: string) => void;
   completeAssistantMessage: () => void;
-  clearMessages: () => void;
+  resetChat: () => void;
+  setThreadId: (threadId: string) => void;
 }
 
 export const useChatStore = create<ChatState>()(
   persist(
     (set) => ({
+      threadId: uuidv4(),
       open: false,
       turns: [],
       message: "",
@@ -136,7 +140,7 @@ export const useChatStore = create<ChatState>()(
           }
           return { turns: [...turns, lastTurn] };
         }),
-      clearMessages: () =>
+      resetChat: () =>
         set((state) => {
           // clear image cache
           state.turns.forEach((turn) => {
@@ -147,8 +151,9 @@ export const useChatStore = create<ChatState>()(
           if (state.currentImage) {
             removeCachedBlob(state.currentImage);
           }
-          return { turns: [], message: "", currentImage: null };
+          return { threadId: uuidv4(), turns: [], message: "", currentImage: null };
         }),
+      setThreadId: (threadId) => set({ threadId: threadId }),
     }),
     {
       name: "chat-storage",

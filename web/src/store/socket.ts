@@ -7,7 +7,6 @@ export interface Message {
     name: string;
     image?: string;
     text: string;
-    context: string[];
 }
 
 export interface Action {
@@ -60,11 +59,10 @@ export class SocketServer {
         this.socket?.send(message);
     }
 
-    public sendTurn = async (turn: Turn, context: string[] = []) => {
+    public sendTurn = async (turn: Turn) => {
         const message: Message = {
             name: turn.name,
-            text: turn.message,
-            context: context
+            text: turn.message
         };
 
         if (turn.image) {

@@ -1,11 +1,19 @@
+import asyncio
 import json
-from typing import Literal
+from pathlib import Path
+from typing import Dict, Literal
 from fastapi import WebSocket
-from fastapi.websockets import WebSocketState
-from prompty.tracer import Tracer
 from pydantic import BaseModel
-from rtclient import RTLowLevelClient
+from prompty.tracer import Tracer
+from fastapi.websockets import WebSocketState
 from api.realtime import RealtimeVoiceClient
+
+
+# Load products and purchases
+# NOTE: This would generally be accomplished by querying a database
+base_path = Path(__file__).parent
+products = json.loads((base_path / "products.json").read_text())
+purchases = json.loads((base_path / "purchases.json").read_text())
 
 
 class Message(BaseModel):
@@ -20,7 +28,6 @@ class RealtimeSession:
         self.client: WebSocket = client
 
     async def send_message(self, message: Message):
-        #print("sending message", message.model_dump_json())
         await self.client.send_json(message.model_dump())
 
     async def send_audio(self, audio: Message):
@@ -85,12 +92,84 @@ class RealtimeSession:
     async def receive_client(self):
         while self.client.client_state != WebSocketState.DISCONNECTED:
             message = await self.client.receive_text()
-            
+
             message_json = json.loads(message)
-            m =  Message(**message_json)
-            #print("received message", m.type)
+            m = Message(**message_json)
+            # print("received message", m.type)
             match m.type:
                 case "audio":
                     await self.realtime.send_audio_message(m.payload)
                 case _:
-                    await self.send_console(Message(type="console", payload="Unhandled message"))
+                    await self.send_console(
+                        Message(type="console", payload="Unhandled message")
+                    )
+
+    async def close(self):
+        try:
+            await self.client.close()
+            await self.realtime.close()
+        except Exception as e:
+            print("Error closing session", e)
+            self.client = None
+            self.realtime = None
+
+
+class ChatSession:
+    def __init__(self, client: WebSocket):
+        self.client = client
+        self.realtime: RealtimeSession = None
+
+    async def send_message(self, message: Message):
+        await self.client.send_json(message.model_dump())
+
+    def add_realtime(self, realtime: RealtimeSession):
+        self.realtime = realtime
+
+    async def start_chat(self):
+        try:
+            while (
+                self.client != None
+                and self.client.client_state != WebSocketState.DISCONNECTED
+            ):
+                message = await self.client.receive_json()
+                m = Message(**message)
+                print("received message", m.type, m.payload)
+
+        except Exception as e:
+            print("Error in chat session", e)
+            await self.client.close()
+
+    async def start_realtime(self, prompt: str):
+        await self.realtime.send_realtime_instructions(prompt)
+        tasks = [
+            asyncio.create_task(self.realtime.receive_realtime()),
+            asyncio.create_task(self.realtime.receive_client()),
+        ]
+        await asyncio.gather(*tasks)
+
+    async def close(self):
+        await self.client.close()
+        if self.realtime:
+            await self.realtime.close()
+
+
+class SessionManager:
+    sessions: Dict[str, ChatSession] = {}
+
+    @classmethod
+    async def create_session(cls, thread_id: str, socket: WebSocket) -> ChatSession:
+        session = ChatSession(socket)
+        cls.sessions[thread_id] = session
+        return session
+
+    @classmethod
+    def get_session(cls, thread_id: str):
+        if thread_id in cls.sessions:
+            return cls.sessions[thread_id]
+        return None
+
+    @classmethod
+    async def close_session(cls, thread_id: str):
+        if thread_id in cls.sessions:
+            await cls.sessions[thread_id].close()
+            del cls.sessions[thread_id]

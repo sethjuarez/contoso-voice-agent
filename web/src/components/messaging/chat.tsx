@@ -5,25 +5,18 @@ import { useEffect, useRef, useState } from "react";
 import { GrPowerReset, GrClose, GrBeacon } from "react-icons/gr";
 import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { HiOutlinePaperAirplane } from "react-icons/hi2";
-//typescript-eslint.io/rules/no-unused-vars
-import { User, useUserStore } from "@/store/user";
-import { AssistantName, ChatState, Turn, useChatStore } from "@/store/chat";
+import { useUserStore } from "@/store/user";
+import { ChatState, Turn, useChatStore } from "@/store/chat";
 import usePersistStore from "@/store/usePersistStore";
 import FileImagePicker from "./fileimagepicker";
 import { fetchCachedImage, removeCachedBlob } from "@/store/images";
 import VideoImagePicker from "./videoimagepicker";
 import { WS_ENDPOINT } from "@/store/endpoint";
 import {
-  Action,
-  Assistant,
-  Context,
   SocketMessage,
   SocketServer,
 } from "@/store/socket";
-import { SessionState, useSessionStore } from "@/store/session";
-import { ContextState, useContextStore } from "@/store/context";
 import clsx from "clsx";
-import { useSummaryStore } from "@/store/summary";
 
 interface ChatOptions {
   video?: boolean;
@@ -43,47 +36,7 @@ const Chat = ({ options }: Props) => {
   const state = usePersistStore(useChatStore, (state) => state);
   const stateRef = useRef<ChatState | undefined>();
 
-  const session = usePersistStore(useSessionStore, (state) => state);
-  const sessionRef = useRef<SessionState | undefined>();
-
   const user = useUserStore((state) => state.user);
-  const setUser = useUserStore((state) => state.setUser);
-
-  const context = usePersistStore(useContextStore, (state) => state);
-  const contextRef = useRef<ContextState | undefined>();
-
-  const summary = usePersistStore(useSummaryStore, (state) => state);
-
-  /** Startup */
-  useEffect(() => {
-    if (!user) {
-      const fetchUser = async () => {
-        // TODO: Replace with EasyAuth
-        //const response = await fetch("/auth");
-        //const data = await response.json();
-        //const user = data as User;
-        const u: User = {
-          name: "Seth Juarez",
-          email: "seth.juarez@microsoft.com",
-          image: "/people/sethjuarez.jpg",
-        };
-        setUser(u.name, u.email, u.image);
-      };
-
-      fetchUser();
-    }
-
-    if (
-      !server.current &&
-      session &&
-      session?.threadId &&
-      session?.threadId.length > 0
-    ) {
-      createSocket(session?.threadId);
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.threadId]);
 
   /** Current State */
   useEffect(() => {
@@ -96,34 +49,12 @@ const Chat = ({ options }: Props) => {
     }
   }, [state]);
 
-  /** Current Session */
-  useEffect(() => {
-    sessionRef.current = session;
 
-    // did we just change location?
-    // if so, we need to complete the action
-    if (
-      session &&
-      session.lastAction &&
-      session.lastAction.action === "move" &&
-      session.lastAction.state === "started" &&
-      session.lastAction.payload
-    ) {
-      const location = JSON.parse(session.lastAction.payload);
-      if (window.location.href.endsWith(location.href)) {
-        session.completeAction();
-      }
-    }
-  }, [session]);
 
-  /** Current Context */
-  useEffect(() => {
-    contextRef.current = context;
-  }, [context]);
 
   /** Send */
   const sendMessage = async () => {
-    if (stateRef.current && contextRef.current) {
+    if (stateRef.current) {
       // get current message
       const turn: Turn = {
         name: user?.name || "Seth Juarez",
@@ -145,62 +76,15 @@ const Chat = ({ options }: Props) => {
       // process on server
       //execute(turn);
       if (server.current && server.current.ready) {
-        await server.current.sendTurn(turn, contextRef.current.context);
+        await server.current.sendTurn(turn);
       }
     }
   };
 
   /** Events */
   const serverCallback = (data: SocketMessage) => {
-    //console.log("Server Response:", data);
+    console.log("Server Response:", data);
 
-    // assistant messaging work
-    if (stateRef.current && data.type === "assistant") {
-      const payload = data.payload as Assistant;
-
-      if (payload.state === "start") {
-        console.log("Assistant Payload", payload);
-        stateRef.current.startAssistantMessage(AssistantName);
-      } else if (payload.state === "stream") {
-        stateRef.current.streamAssistantMessage(payload.payload || "");
-      } else if (payload.state === "complete") {
-        console.log("Assistant Payload", payload);
-        stateRef.current.completeAssistantMessage();
-      } else if (payload.state === "full") {
-        stateRef.current.addAssistantMessage(
-          AssistantName,
-          payload.payload || ""
-        );
-      }
-    } else if (contextRef.current && data.type === "context") {
-      const payload = data.payload as Context;
-      console.log("Context Payload", payload);
-      if (payload.type === "user" && contextRef.current) {
-        contextRef.current.addContext(payload.payload);
-      } else if (payload.type === "action") {
-        localStorage.setItem("actionContext", payload.payload);
-      }
-    } else if (sessionRef.current && data.type === "action") {
-      const payload = data.payload as Action;
-      console.log("Action Payload", payload);
-      sessionRef.current.startAction(
-        window.location.pathname,
-        payload.name,
-        payload.arguments
-      );
-      if (payload.name === "move") {
-        const location = JSON.parse(payload.arguments);
-        // change location
-        window.location.href = location.href;
-      } else if (payload.name === "console") {
-        const args = JSON.parse(payload.arguments);
-        console.log(args);
-        sessionRef.current.completeAction();
-      } else if (payload.name === "thread") {
-        const args = JSON.parse(payload.arguments);
-        sessionRef.current.setThreadId(args.thread);
-      }
-    }
   };
 
   const manageConnection = () => {
@@ -208,9 +92,8 @@ const Chat = ({ options }: Props) => {
       server.current.close();
       server.current = null;
     } else {
-      if (sessionRef.current && sessionRef.current.threadId) {
-        //console.log("Creating Socket " + sessionRef.current.threadId);
-        createSocket(sessionRef.current.threadId);
+      if (stateRef.current && stateRef.current.threadId) {
+        createSocket(stateRef.current.threadId);
       }
     }
   };
@@ -218,10 +101,10 @@ const Chat = ({ options }: Props) => {
   const createSocket = (threadId: string) => {
     console.log("Starting Socket (" + threadId + ")");
     const endpoint = WS_ENDPOINT.endsWith("/")
-      ? WS_ENDPOINT
-      : WS_ENDPOINT + "/";
+      ? WS_ENDPOINT.slice(0, -1)
+      : WS_ENDPOINT;
     server.current = new SocketServer(
-      endpoint + "api/concierge/ws",
+      endpoint + "/api/chat",
       threadId,
       () => setConnected(true),
       () => setConnected(false)
@@ -230,10 +113,7 @@ const Chat = ({ options }: Props) => {
   };
 
   const clear = () => {
-    state && state.clearMessages();
-    session && session.resetSession();
-    context && context.clearContext();
-    summary && summary.clearContent();
+    state && state.resetChat();
     if (server.current && server.current.ready) {
       server.current.close();
       server.current = null;

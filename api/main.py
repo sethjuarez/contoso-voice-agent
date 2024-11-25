@@ -5,7 +5,7 @@ from typing import List
 from rtclient import RTLowLevelClient
 from api.models import FunctionQuery
 from api.realtime import RealtimeVoiceClient
-from api.session import RealtimeSession
+from api.session import RealtimeSession, SessionManager
 from api.actions import create_actions, ToolCall
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,6 +58,23 @@ async def action(query: FunctionQuery) -> List[ToolCall]:
     return response
 
 
+@app.websocket("/api/chat")
+async def chat_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        # first message should be thread id
+        data = await websocket.receive_json()
+        thread_id = data["threadId"]
+        session = SessionManager.get_session(thread_id)
+        if not session:
+            session = await SessionManager.create_session(thread_id, websocket)
+        else:
+            session.client = websocket
+
+    except WebSocketDisconnect as e:
+        print("Chat Socket Disconnected", e)
+
+
 @app.websocket("/api/voice")
 async def voice_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -76,4 +93,4 @@ async def voice_endpoint(websocket: WebSocket):
             await asyncio.gather(*tasks)
 
     except WebSocketDisconnect as e:
-        print("Socket Disconnected", e)
+        print("Voice Socket Disconnected", e)

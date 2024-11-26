@@ -67,8 +67,10 @@ async def chat_endpoint(websocket: WebSocket):
         thread_id = data["threadId"]
         session = SessionManager.get_session(thread_id)
         if not session:
+            print("Creating new session")
             session = await SessionManager.create_session(thread_id, websocket)
         else:
+            print(f"Reusing existing session {thread_id}")
             session.client = websocket
 
     except WebSocketDisconnect as e:

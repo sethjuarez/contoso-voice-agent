@@ -1,10 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Literal, Optional
 
-class FunctionQuery(BaseModel):
-    carousel: str
-    input: str
-
 
 class Action(BaseModel):
     name: str
@@ -30,9 +26,38 @@ class ClientMessage(BaseModel):
     name: str
     image: Optional[str] = None
     text: str
-    context: List[str] = []
 
 
-class AgentMessage(BaseModel):
-    role: str
-    content: str
+def start_assistant():
+    return SocketMessage(
+        type="assistant", payload=Assistant(state="start")
+    ).model_dump()
+
+
+def stream_assistant(chunk: str):
+    return SocketMessage(
+        type="assistant", payload=Assistant(state="stream", payload=chunk)
+    ).model_dump()
+
+
+def stop_assistant():
+    return SocketMessage(
+        type="assistant", payload=Assistant(state="complete")
+    ).model_dump()
+
+
+def full_assistant(message: str):
+    return SocketMessage(
+        type="assistant", payload=Assistant(state="full", payload=message)
+    ).model_dump()
+
+
+def send_context(context: str):
+    return SocketMessage(
+        type="context", payload=Context(type="user", payload=context)
+    ).model_dump()
+
+def send_action(name: str, arguments: str):
+    return SocketMessage(
+        type="action", payload=Action(name=name, arguments=arguments)
+    ).model_dump()

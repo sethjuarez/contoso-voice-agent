@@ -6,6 +6,8 @@ from rtclient import (
     InputAudioTranscription,
     ItemCreateMessage,
     RTLowLevelClient,
+    ResponseCreateMessage,
+    ResponseCreateParams,
     ServerVAD,
     SessionUpdateMessage,
     SessionUpdateParams,
@@ -65,6 +67,39 @@ class RealtimeVoiceClient:
                 )
             )
         )
+
+    async def send_user_message_with_response(self, message: str):
+        if self.client is None:
+            raise Exception("Client not set")
+
+        if message is None or len(message) == 0:
+            return
+
+        response = ResponseCreateParams(
+            input_items=[
+                UserMessageItem(
+                    content=ItemCreateMessage(
+                        item=UserMessageItem(
+                            role="user",
+                            content=[
+                                {
+                                    "type": "input_text",
+                                    "text": message,
+                                }
+                            ],
+                        )
+                    )
+                )
+            ]
+        )
+
+        await self.client.send(ResponseCreateMessage(response=response))
+
+    async def trigger_response(self):
+        if self.client is None:
+            raise Exception("Client not set")
+        # TODO: Write create message
+        await self.client.send(ResponseCreateMessage(response=ResponseCreateParams()))
 
     async def send_system_message(self, message: str):
         if self.client is None:

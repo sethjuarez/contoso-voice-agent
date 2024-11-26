@@ -17,6 +17,7 @@ model:
 sample:
   customer: Seth
   context: []
+  image: winter.jpg
   catalog: ${file:products.json}
   purchases: ${file:purchases.json}
   question: My friend just sent me this and I'm worried I don't have the right gear for my camping trip. Can you help me? CALL ME

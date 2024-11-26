@@ -1,11 +1,13 @@
 import asyncio
 import json
 from pathlib import Path
-from typing import Dict, Literal
+from typing import Dict, List, Literal
 from fastapi import WebSocket
 from pydantic import BaseModel
 from prompty.tracer import Tracer
 from fastapi.websockets import WebSocketState
+from api.chat import create_response
+from api.models import ClientMessage, full_assistant, send_action, send_context, start_assistant, stop_assistant, stream_assistant
 from api.realtime import RealtimeVoiceClient
 
 
@@ -118,6 +120,7 @@ class ChatSession:
     def __init__(self, client: WebSocket):
         self.client = client
         self.realtime: RealtimeSession = None
+        self.context: List[str] = []
 
     async def send_message(self, message: Message):
         await self.client.send_json(message.model_dump())
@@ -132,12 +135,32 @@ class ChatSession:
                 and self.client.client_state != WebSocketState.DISCONNECTED
             ):
                 message = await self.client.receive_json()
-                m = Message(**message)
-                print("received message", m.type, m.payload)
+                msg = ClientMessage(**message)
+
+                # start assistant
+                await self.client.send_json(start_assistant())
+
+                # create response
+                response = await create_response(msg.name, msg.text, self.context, msg.image)
+
+                # unpack response
+                text = response["response"]
+                context = response["context"]
+                call = response["call"]
+
+                # send response
+                await self.client.send_json(stream_assistant(text))
+                await self.client.send_json(stop_assistant())
+
+                # send context
+                await self.client.send_json(send_context(context))
+                await self.client.send_json(
+                    send_action("call", json.dumps({"score": call}))
+                )
+                self.context.append(response["context"])
 
         except Exception as e:
             print("Error in chat session", e)
-            await self.client.close()
 
     async def start_realtime(self, prompt: str):
         await self.realtime.send_realtime_instructions(prompt)

@@ -1,12 +1,9 @@
 import os
 import asyncio
 from pathlib import Path
-from typing import List
 from rtclient import RTLowLevelClient
-from api.models import FunctionQuery
 from api.realtime import RealtimeVoiceClient
 from api.session import RealtimeSession, SessionManager
-from api.actions import create_actions, ToolCall
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from azure.core.credentials import AzureKeyCredential
@@ -52,12 +49,6 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.post("/api/action")
-async def action(query: FunctionQuery) -> List[ToolCall]:
-    response = await create_actions(query.carousel, query.input)
-    return response
-
-
 @app.websocket("/api/chat")
 async def chat_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -72,6 +63,8 @@ async def chat_endpoint(websocket: WebSocket):
         else:
             print(f"Reusing existing session {thread_id}")
             session.client = websocket
+
+        await session.start_chat()
 
     except WebSocketDisconnect as e:
         print("Chat Socket Disconnected", e)

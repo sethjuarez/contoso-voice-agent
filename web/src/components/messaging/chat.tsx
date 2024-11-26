@@ -17,6 +17,8 @@ import {
   SocketServer,
 } from "@/store/socket";
 import clsx from "clsx";
+import { ContextState, useContextStore } from "@/store/context";
+import { ActionClient } from "@/socket/action";
 
 interface ChatOptions {
   video?: boolean;
@@ -36,6 +38,9 @@ const Chat = ({ options }: Props) => {
   const state = usePersistStore(useChatStore, (state) => state);
   const stateRef = useRef<ChatState | undefined>();
 
+  const context = usePersistStore(useContextStore, (state) => state);
+  const contextRef = useRef<ContextState | undefined>();
+
   const user = useUserStore((state) => state.user);
 
   /** Current State */
@@ -49,7 +54,10 @@ const Chat = ({ options }: Props) => {
     }
   }, [state]);
 
-
+  /** Current Context */
+  useEffect(() => {
+    contextRef.current = context;
+  }, [context]);
 
 
   /** Send */
@@ -83,8 +91,10 @@ const Chat = ({ options }: Props) => {
 
   /** Events */
   const serverCallback = (data: SocketMessage) => {
-    console.log("Server Response:", data);
-
+    if(stateRef.current && contextRef.current) {
+      const client = new ActionClient(stateRef.current, contextRef.current);
+      client.execute(data);
+    }
   };
 
   const manageConnection = () => {
@@ -114,6 +124,7 @@ const Chat = ({ options }: Props) => {
 
   const clear = () => {
     state && state.resetChat();
+    context && context.clearContext();
     if (server.current && server.current.ready) {
       server.current.close();
       server.current = null;

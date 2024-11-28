@@ -32,21 +32,24 @@ class VoiceClient {
       const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       this.socket!.send({ type: "audio", payload: base64 });
     });
-    const constraints: MediaStreamConstraints = {
-      audio: {
+
+    let audio: object = {
         sampleRate: 24000,
         echoCancellation: true,
         noiseSuppression: true,
         autoGainControl: true,
-      },
     };
     
     if (deviceId) {
       console.log("Using device:", deviceId);
-      constraints.audio = {...constraints, deviceId: { exact: deviceId }};
+      audio = { ...audio, deviceId: { exact: deviceId } };
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    console.log(audio);
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: audio,
+    });
+    
     this.recorder.start(stream);
     this.startResponseListener();
   }

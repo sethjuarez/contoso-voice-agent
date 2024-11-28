@@ -11,10 +11,13 @@ import { WS_ENDPOINT } from "@/store/endpoint";
 import { Message } from "@/socket/types";
 import VoiceInput from "./voiceinput";
 import VoiceClient from "@/socket/voice-client";
+import { useSound } from "@/audio/useSound";
 
 const Voice = () => {
   const [listening, setListening] = useState<boolean>(false);
   const [settings, setSettings] = useState<boolean>(false);
+
+  const { playSound, stopSound } = useSound("/phone-ring.mp3");
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -74,6 +77,7 @@ const Voice = () => {
       stopRealtime();
     } else {
       startRealtime();
+      
     }
     // toggle css class
     buttonRef.current?.classList.toggle(styles.voiceOn);
@@ -81,8 +85,14 @@ const Voice = () => {
 
   const toggleSettings = () => {
     setSettings(!settings);
+    if(settings) {
+      stopSound();
+    } else {
+      playSound();
+    }
     settingsRef.current?.classList.toggle(styles.settingsOn);
   };
+
 
   return (
     <div className={styles.voice}>

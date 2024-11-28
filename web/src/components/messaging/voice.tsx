@@ -8,10 +8,9 @@ import {
   HiOutlineArrowLeftOnRectangle,
 } from "react-icons/hi2";
 import { WS_ENDPOINT } from "@/store/endpoint";
-import { WebSocketClient } from "@/socket/websocket-client";
-import { Player, Recorder } from "@/audio";
 import { Message } from "@/socket/types";
 import VoiceInput from "./voiceinput";
+import VoiceClient from "@/socket/voice-client";
 
 const Voice = () => {
   const [listening, setListening] = useState<boolean>(false);
@@ -19,23 +18,7 @@ const Voice = () => {
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
-  const socket = useRef<WebSocketClient<Message, Message> | null>(null);
-  const player = useRef<Player | null>(null);
-  const recorder = useRef<Recorder | null>(null);
-
-  const startResponseListener = async () => {
-    if (!socket.current) return;
-
-    try {
-      for await (const serverEvent of socket.current) {
-        handleServerMessage(serverEvent);
-      }
-    } catch (error) {
-      if (socket.current) {
-        console.error("Response iteration error:", error);
-      }
-    }
-  };
+  const voiceRef = useRef<VoiceClient | null>(null);
 
   const handleServerMessage = async (serverEvent: Message) => {
     switch (serverEvent.type) {
@@ -48,70 +31,40 @@ const Voice = () => {
       case "console":
         console.log(serverEvent.payload);
         break;
-      case "audio":
-        const buffer = Uint8Array.from(atob(serverEvent.payload), (c) =>
-          c.charCodeAt(0)
-        ).buffer;
-        player.current?.play(new Int16Array(buffer));
-        break;
     }
   };
 
   const startRealtime = async () => {
-    if (!socket.current) {
-      console.log("Starting realtime");
+    if (voiceRef.current) {
+      await voiceRef.current.stop();
+      voiceRef.current = null;
+    }
+
+    if (!voiceRef.current) {
       const endpoint = WS_ENDPOINT.endsWith("/")
         ? WS_ENDPOINT.slice(0, -1)
         : WS_ENDPOINT;
-      socket.current = new WebSocketClient<Message, Message>(
-        `${endpoint}/api/voice`
-      );
-      player.current = new Player();
-      await player.current.init(24000);
 
-      recorder.current = new Recorder((buffer) => {
-        const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-        socket.current?.send({ type: "audio", payload: base64 });
-      });
+      voiceRef.current = new VoiceClient(
+        `${endpoint}/api/voice`,
+        handleServerMessage
+      );
 
       const device = localStorage.getItem("selected-audio-device");
-      let constraints: MediaStreamConstraints;
+      let deviceId: string | null = null;
       if (device) {
         const parsedDevice = JSON.parse(device);
         console.log("Using device:", parsedDevice);
-        constraints = {
-          audio: {
-            sampleRate: 24000,
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            deviceId: { exact: parsedDevice.deviceId },
-          },
-        };
-      } else {
-        console.log("Using default device");
-        constraints = {
-          audio: {
-            sampleRate: 24000,
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-          },
-        };
+        deviceId = parsedDevice.deviceId;
       }
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      recorder.current.start(stream);
-      startResponseListener();
+      await voiceRef.current.start(deviceId);
     }
   };
 
   const stopRealtime = async () => {
-    if (socket.current) {
-      console.log("Stopping realtime");
-      player.current?.clear();
-      recorder.current?.stop();
-      await socket.current.close();
-      socket.current = null;
+    if (voiceRef.current) {
+      await voiceRef.current.stop();
+      voiceRef.current = null;
     }
   };
 
@@ -129,7 +82,7 @@ const Voice = () => {
   const toggleSettings = () => {
     setSettings(!settings);
     settingsRef.current?.classList.toggle(styles.settingsOn);
-  }
+  };
 
   return (
     <div className={styles.voice}>

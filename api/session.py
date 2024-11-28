@@ -19,7 +19,7 @@ purchases = json.loads((base_path / "purchases.json").read_text())
 
 
 class Message(BaseModel):
-    type: Literal["user", "assistant", "audio", "console"]
+    type: Literal["user", "assistant", "audio", "console", "interrupt"]
     payload: str
 
 
@@ -44,9 +44,8 @@ class RealtimeSession:
 
     async def receive_realtime(self):
         while self.realtime != None and not self.realtime.closed:
-            print("waiting for message")
             async for message in self.realtime.receive_message():
-                print("received message", message.type)
+                # print("received message", message.type)
                 if message is None:
                     continue
 
@@ -58,9 +57,6 @@ class RealtimeSession:
                             await self.send_message(
                                 Message(type="user", payload=message.content)
                             )
-
-                    case "turn_detected":
-                        pass
 
                     case "response.audio_transcript.done":
                         with Tracer.start("receive_assistant_transcript") as t:
@@ -79,13 +75,19 @@ class RealtimeSession:
                     case "response.failed":
                         with Tracer.start("realtime_failure") as t:
                             t("failure", message.content)
-                            self.send_console(
+                            await self.send_console(
                                 Message(type="console", payload=message.content)
                             )
+                    case "turn_detected":
+                        # send interrupt message
+                        #print("turn detected")
+                        await self.send_console(
+                            Message(type="interrupt", payload="")
+                        )
                     case _:
                         with Tracer.start("unhandled_message") as t:
                             t("message", message)
-                            self.send_console(
+                            await self.send_console(
                                 Message(type="console", payload="Unhandled message")
                             )
 

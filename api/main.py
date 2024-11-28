@@ -79,7 +79,7 @@ async def voice_endpoint(websocket: WebSocket):
             key_credential=AzureKeyCredential(AZURE_VOICE_KEY),
             azure_deployment="gpt-4o-realtime-preview",
         ) as rt:
-            session = RealtimeSession(RealtimeVoiceClient(rt, verbose=True), websocket)
+            session = RealtimeSession(RealtimeVoiceClient(rt), websocket)
             await session.send_realtime_instructions(prompt)
             tasks = [
                 asyncio.create_task(session.receive_realtime()),

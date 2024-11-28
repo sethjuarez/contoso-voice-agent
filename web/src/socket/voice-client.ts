@@ -20,7 +20,7 @@ class VoiceClient {
     this.recorder = null;
   }
 
-  async start() {
+  async start(deviceId: string | null = null) {
     console.log("Starting voice client");
     this.socket = new WebSocketClient<Message, Message>(this.url);
 
@@ -29,21 +29,25 @@ class VoiceClient {
     await this.player.init(24000);
 
     this.recorder = new Recorder((buffer) => {
-      console.log("Sending audio");
       const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
       this.socket!.send({ type: "audio", payload: base64 });
     });
-
-    const stream = await navigator.mediaDevices.getUserMedia({
+    const constraints: MediaStreamConstraints = {
       audio: {
         sampleRate: 24000,
         echoCancellation: true,
         noiseSuppression: true,
         autoGainControl: true,
       },
-    });
-    this.recorder.start(stream);
+    };
+    
+    if (deviceId) {
+      console.log("Using device:", deviceId);
+      constraints.audio = {...constraints, deviceId: { exact: deviceId }};
+    }
 
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    this.recorder.start(stream);
     this.startResponseListener();
   }
 
@@ -54,13 +58,16 @@ class VoiceClient {
 
     try {
       for await (const serverEvent of this.socket) {
-        console.log("Server event", serverEvent);
-        // handle audio case internally
+        
         if (serverEvent.type === "audio") {
+          // handle audio case internally
           const buffer = Uint8Array.from(atob(serverEvent.payload), (c) =>
             c.charCodeAt(0)
           ).buffer;
           this.player!.play(new Int16Array(buffer));
+        } else if(serverEvent.type === "interrupt") {
+          // handle interrupt case internally
+          this.player!.clear();
         } else {
           this.handleServerMessage(serverEvent);
         }

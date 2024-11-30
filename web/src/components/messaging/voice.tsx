@@ -1,23 +1,37 @@
 "use client";
 //import VoiceClient from "@/socket/voice-client";
+import clsx from "clsx";
 import styles from "./voice.module.css";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  HiOutlinePhone,
-  HiOutlineArrowRightOnRectangle,
-  HiOutlineArrowLeftOnRectangle,
-} from "react-icons/hi2";
+  FiPhone,
+  FiPhoneCall,
+  FiPhoneOff,
+  FiChevronsRight,
+  FiChevronsLeft,
+} from "react-icons/fi";
 import { WS_ENDPOINT } from "@/store/endpoint";
 import { Message } from "@/socket/types";
 import VoiceInput from "./voiceinput";
 import VoiceClient from "@/socket/voice-client";
 import { useSound } from "@/audio/useSound";
+import { ContextState, useContextStore } from "@/store/context";
+import usePersistStore from "@/store/usePersistStore";
+import { ChatState, useChatStore } from "@/store/chat";
 
 const Voice = () => {
-  const [listening, setListening] = useState<boolean>(false);
   const [settings, setSettings] = useState<boolean>(false);
 
+  const [callState, setCallState] = useState<"idle" | "ringing" | "call">(
+    "idle"
+  );
   const { playSound, stopSound } = useSound("/phone-ring.mp3");
+
+  const state = usePersistStore(useChatStore, (state) => state);
+  const stateRef = useRef<ChatState | undefined>();
+
+  const context = usePersistStore(useContextStore, (state) => state);
+  const contextRef = useRef<ContextState | undefined>();
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -71,47 +85,80 @@ const Voice = () => {
     }
   };
 
-  const toggleRealtime = () => {
-    setListening(!listening);
-    if (listening) {
-      stopRealtime();
-    } else {
-      startRealtime();
-      
-    }
-    // toggle css class
-    buttonRef.current?.classList.toggle(styles.voiceOn);
-  };
-
   const toggleSettings = () => {
     setSettings(!settings);
-    if(settings) {
-      stopSound();
-    } else {
-      playSound();
-    }
     settingsRef.current?.classList.toggle(styles.settingsOn);
   };
 
+  const startCall = useCallback(async () => {
+    console.log("Starting call");
+    setCallState("ringing");
+    playSound();
+    // reset call score
+  }, [playSound]);
+
+  const answerCall = async () => {
+    console.log("Answering call");
+    setCallState("call");
+    stopSound();
+    buttonRef.current?.classList.remove(styles.callRing);
+    await startRealtime();
+  };
+
+  const hangupCall = async () => {
+    console.log("Hanging up call");
+    setCallState("idle");
+    stopSound();
+    await stopRealtime();
+  };
+
+  useEffect(() => {
+    if (context) {
+      contextRef.current = context;
+    }
+    if (state) {
+      stateRef.current = state;
+    }
+  }, [context, state]);
+
+
+  useEffect(() => {
+    if (contextRef.current && contextRef.current.call >= 5) {
+      contextRef.current.setCallScore(0);
+      startCall();
+    }
+  }, [contextRef.current?.call, startCall]);
 
   return (
     <div className={styles.voice}>
-      <div
-        className={styles.voiceButton}
-        ref={buttonRef}
-        onClick={toggleRealtime}
-      >
-        <HiOutlinePhone size={32} />
-      </div>
+      {callState === "idle" && (
+        <div className={styles.voiceButton} onClick={startCall}>
+          <FiPhone size={32} />
+        </div>
+      )}
+      {callState !== "idle" && (
+        <>
+          <div
+            className={clsx(styles.callButton, styles.callRing)}
+            ref={buttonRef}
+            onClick={answerCall}
+          >
+            <FiPhoneCall size={32} />
+          </div>
+          <div className={styles.callHangup} onClick={hangupCall}>
+            <FiPhoneOff size={32} />
+          </div>
+        </>
+      )}
       <div
         className={styles.settingsButton}
         ref={settingsRef}
         onClick={toggleSettings}
       >
         {settings ? (
-          <HiOutlineArrowLeftOnRectangle size={32} />
+          <FiChevronsLeft size={32} />
         ) : (
-          <HiOutlineArrowRightOnRectangle size={32} />
+          <FiChevronsRight size={32} />
         )}
       </div>
       {settings && <VoiceInput />}

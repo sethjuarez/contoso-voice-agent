@@ -48,7 +48,6 @@ class RealtimeVoiceClient:
         if self.client is not None:
             await self.client.close()
 
-    @trace
     async def send_user_message(self, message: str):
         if self.client is None:
             raise Exception("Client not set")
@@ -98,7 +97,6 @@ class RealtimeVoiceClient:
 
         await self.client.send(ResponseCreateMessage(response=response))
 
-    @trace
     async def trigger_response(self):
         if self.client is None:
             raise Exception("Client not set")

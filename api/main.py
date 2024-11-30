@@ -99,7 +99,7 @@ async def chat_endpoint(websocket: WebSocket):
             print(f"Reusing existing session {thread_id}")
             session.client = websocket
 
-        await session.start_chat()
+        await session.receive_chat()
 
     except WebSocketDisconnect as e:
         print("Chat Socket Disconnected", e)

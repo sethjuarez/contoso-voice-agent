@@ -11,15 +11,8 @@ from api.models import ClientMessage, full_assistant, send_action, send_context,
 from api.realtime import RealtimeVoiceClient
 
 
-# Load products and purchases
-# NOTE: This would generally be accomplished by querying a database
-base_path = Path(__file__).parent
-products = json.loads((base_path / "products.json").read_text())
-purchases = json.loads((base_path / "purchases.json").read_text())
-
-
 class Message(BaseModel):
-    type: Literal["user", "assistant", "audio", "console", "interrupt"]
+    type: Literal["user", "assistant", "audio", "console", "interrupt", "messages"]
     payload: str
 
 
@@ -75,12 +68,11 @@ class RealtimeSession:
                     case "response.failed":
                         with Tracer.start("realtime_failure") as t:
                             t("failure", message.content)
-                            await self.send_console(
-                                Message(type="console", payload=message.content)
-                            )
+                            print("Realtime failure", message.content)
+                            
                     case "turn_detected":
                         # send interrupt message
-                        #print("turn detected")
+                        # print("turn detected")
                         await self.send_console(
                             Message(type="interrupt", payload="")
                         )
@@ -103,6 +95,10 @@ class RealtimeSession:
             match m.type:
                 case "audio":
                     await self.realtime.send_audio_message(m.payload)
+                case "user":
+                    await self.realtime.send_user_message(m.payload)
+                case "interrupt":
+                    await self.realtime.trigger_response()
                 case _:
                     await self.send_console(
                         Message(type="console", payload="Unhandled message")

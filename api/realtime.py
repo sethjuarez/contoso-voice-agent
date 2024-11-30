@@ -98,8 +98,7 @@ class RealtimeVoiceClient:
     async def trigger_response(self):
         if self.client is None:
             raise Exception("Client not set")
-        # TODO: Write create message
-        await self.client.send(ResponseCreateMessage(response=ResponseCreateParams()))
+        await self.client.send(ResponseCreateMessage())
 
     async def send_system_message(self, message: str):
         if self.client is None:

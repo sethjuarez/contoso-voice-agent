@@ -18,15 +18,22 @@ import { useSound } from "@/audio/useSound";
 import { ContextState, useContextStore } from "@/store/context";
 import usePersistStore from "@/store/usePersistStore";
 import { ChatState, useChatStore } from "@/store/chat";
-import { ActionClient } from "@/socket/action";
+import { ActionClient, startSuggestionTask, suggestionRequested } from "@/socket/action";
 import Content from "./content";
 
 const Voice = () => {
+
+  const contentRef = useRef<string[]>([]);
+
   const [settings, setSettings] = useState<boolean>(false);
 
   const [callState, setCallState] = useState<"idle" | "ringing" | "call">(
     "idle"
   );
+
+  const [suggestions, setSuggestions] = useState<boolean>(false);
+  const suggestionsRef = useRef<boolean>(false);
+
   const { playSound, stopSound } = useSound("/phone-ring.mp3");
 
   const state = usePersistStore(useChatStore, (state) => state);
@@ -44,11 +51,30 @@ const Voice = () => {
     switch (serverEvent.type) {
       case "assistant":
         console.log("assistant:", serverEvent.payload);
-        client.sendVoiceUserMessage(serverEvent.payload);
+        const messages = client.sendVoiceAssistantMessage(serverEvent.payload);
+        console.log(suggestionsRef.current);
+        if (!suggestionsRef.current) {
+          const response = await suggestionRequested(messages);
+          console.log("messages", messages, response);
+          if (response && response.requested) {
+            setSuggestions(true);
+            suggestionsRef.current = true;
+            const task = await startSuggestionTask(messages);
+            for await (const chunk of task) {
+              contentRef.current.push(chunk);
+              client.streamSuggestion(chunk);
+            }
+            if(voiceRef.current) {
+              await voiceRef.current.sendUserMessage("The visual suggestions are ready.");
+              await voiceRef.current.sendCreateResponse();
+            }
+          }
+        }
         break;
       case "user":
         console.log("user:", serverEvent.payload);
-        client.sendVoiceAssistantMessage(serverEvent.payload);
+        client.sendVoiceUserMessage(serverEvent.payload);
+
         break;
       case "console":
         console.log(serverEvent.payload);
@@ -63,6 +89,7 @@ const Voice = () => {
     }
 
     if (!voiceRef.current) {
+      const client = new ActionClient(stateRef.current!, contextRef.current!);
       const endpoint = WS_ENDPOINT.endsWith("/")
         ? WS_ENDPOINT.slice(0, -1)
         : WS_ENDPOINT;
@@ -80,6 +107,11 @@ const Voice = () => {
         deviceId = parsedDevice.deviceId;
       }
       await voiceRef.current.start(deviceId);
+      await voiceRef.current.send({
+        type: "messages",
+        payload: JSON.stringify(client.retrieveMessages()),
+      });
+      await voiceRef.current.sendCreateResponse();
     }
   };
 
@@ -99,7 +131,6 @@ const Voice = () => {
     console.log("Starting call");
     setCallState("ringing");
     playSound();
-    // reset call score
   }, [playSound]);
 
   const answerCall = async () => {
@@ -134,15 +165,18 @@ const Voice = () => {
   }, [contextRef.current?.call, startCall]);
 
   const onCloseSuggestions = () => {
-    alert("close suggestions");
+    setSuggestions(false);
+    suggestionsRef.current = false;
   };
 
   return (
     <div className={styles.voice}>
-      <Content
-        suggestions={contextRef.current?.suggestion}
-        onClose={onCloseSuggestions}
-      />
+      {suggestions && (
+        <Content
+          suggestions={contentRef.current}
+          onClose={onCloseSuggestions}
+        />
+      )}
       <div className={styles.voiceControl}>
         {callState === "idle" && (
           <div className={styles.voiceButton} onClick={startCall}>

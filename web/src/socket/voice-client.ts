@@ -89,6 +89,20 @@ class VoiceClient {
       await this.socket.close();
     }
   }
+
+  async send(message: Message) {
+    if (this.socket) {
+      this.socket.send(message);
+    }
+  }
+
+  async sendUserMessage(message: string) {
+    this.send({ type: "user", payload: message });
+  }
+
+  async sendCreateResponse() {
+    this.send({ type: "interrupt", payload: "" });
+  }
 }
 
 export default VoiceClient;

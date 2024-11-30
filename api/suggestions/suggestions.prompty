@@ -72,6 +72,9 @@ information or commentary or things like **Resolution**. Just the full descripti
 of the products mentioned in the conversation and why they would fit the need.
 Only add a single image to the markdown for each product mentioned in the conversation.
 
+DO NOT INCLUDE any products that are not mentioned in the conversation. Only include products that are
+mentioned in the conversation.
+
 user:
 Can you write a blog-post like description write up of the suggested products in a fun a friendly way?
 Make sure to include (and even bold) things that were said during the conversation as if you were writing

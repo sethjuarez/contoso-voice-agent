@@ -1,30 +1,37 @@
+import json
 import os
 import asyncio
 from pathlib import Path
 from typing import List
 from fastapi.responses import StreamingResponse
+from jinja2 import Environment, FileSystemLoader
 from rtclient import RTLowLevelClient
 from api.realtime import RealtimeVoiceClient
-from api.session import RealtimeSession, SessionManager
+from api.session import Message, RealtimeSession, SessionManager
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from azure.core.credentials import AzureKeyCredential
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from api.session import SessionManager
-
 from api.suggestions import SimpleMessage, create_suggestion, suggestion_requested
+from dotenv import load_dotenv
+
+load_dotenv()
 
 AZURE_VOICE_ENDPOINT = os.getenv("AZURE_VOICE_ENDPOINT")
 AZURE_VOICE_KEY = os.getenv("AZURE_VOICE_KEY")
 
+base_path = Path(__file__).parent
+
+# Load products and purchases
+# NOTE: This would generally be accomplished by querying a database
+products = json.loads((base_path / "products.json").read_text())
+purchases = json.loads((base_path / "purchases.json").read_text())
+
+# jinja2 template environment
+env = Environment(loader=FileSystemLoader(base_path / "call"))
+
 prompt = (Path(__file__).parent / "prompt.txt").read_text()
-
-app = FastAPI()
-
-
-origins = [
-    "*",  # Allow all origins
-]
 
 
 @asynccontextmanager
@@ -42,7 +49,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -60,6 +67,7 @@ async def suggestion(messages: List[SimpleMessage]):
         create_suggestion(messages),
         media_type="text/event-stream",
     )
+
 
 @app.post("/api/request")
 async def request(messages: List[SimpleMessage]):
@@ -99,8 +107,21 @@ async def voice_endpoint(websocket: WebSocket):
             key_credential=AzureKeyCredential(AZURE_VOICE_KEY),
             azure_deployment="gpt-4o-realtime-preview",
         ) as rt:
+            
+            # get current messages for instructions
+            chat_items = await websocket.receive_json()
+            message = Message(**chat_items)
+
+            # create voice system message
+            system_message = env.get_template("script.jinja2").render(
+                customer="Seth",
+                purchases=purchases,
+                context=json.loads(message.payload),
+                products=products,
+            )
+
             session = RealtimeSession(RealtimeVoiceClient(rt), websocket)
-            await session.send_realtime_instructions(prompt)
+            await session.send_realtime_instructions(system_message)
             tasks = [
                 asyncio.create_task(session.receive_realtime()),
                 asyncio.create_task(session.receive_client()),

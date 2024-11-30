@@ -74,4 +74,5 @@ user:
 Can you tell me if the customer is asking for a write up or visual description of the products mentioned in the 
 conversation? Answer with either "YES" or "NO". Please be 100% sure before answering "YES". You should clearly
 see that the user has asked for a write up or visual description of the products mentioned in the conversation
-and the assistant echoes that back to the user.
+and the assistant echoes that back to the user. You are looking for the phrase 
+"can you show this to me visually" in order to respond with "YES".

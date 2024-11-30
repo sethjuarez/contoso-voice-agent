@@ -86,6 +86,7 @@ export class ActionClient {
       type: "user",
     };
     this.state.sendFullMessage(turn);
+    return [... this.retrieveMessages(), { name: "user", text: message }];
   }
 
   sendVoiceAssistantMessage(message: string) {
@@ -98,6 +99,23 @@ export class ActionClient {
       type: "assistant",
     };
     this.state.sendFullMessage(turn);
+    return [... this.retrieveMessages(), { name: "assistant", text: message }];
+  }
+
+  streamSuggestion(chunk: string) {
+    this.context.streamSuggestion(chunk);
+  }
+
+  retrieveMessages(): SimpleMessage[] {
+    const messages: SimpleMessage[] = [];
+    for (const turn of this.state.turns) {
+      if (turn.type === "assistant") {
+        messages.push({ name: "assistant", text: turn.message });
+      } else {
+        messages.push({ name: "user", text: turn.message });
+      }
+    }
+    return messages;
   }
 
   execute(message: SocketMessage) {

@@ -1,5 +1,5 @@
 export interface Message {
-  type: "user" | "assistant" | "audio" | "console" | "interrupt";
+  type: "user" | "assistant" | "audio" | "console" | "interrupt" | "messages";
   payload: string;
 }
 

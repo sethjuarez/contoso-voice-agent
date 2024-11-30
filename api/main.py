@@ -6,6 +6,7 @@ from typing import List
 from fastapi.responses import StreamingResponse
 from jinja2 import Environment, FileSystemLoader
 from rtclient import RTLowLevelClient
+from api import repeat
 from api.realtime import RealtimeVoiceClient
 from api.session import Message, RealtimeSession, SessionManager
 from contextlib import asynccontextmanager
@@ -14,12 +15,19 @@ from azure.core.credentials import AzureKeyCredential
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from api.session import SessionManager
 from api.suggestions import SimpleMessage, create_suggestion, suggestion_requested
+from prompty.tracer import Tracer, trace
 from dotenv import load_dotenv
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+from api.telemetry import init_tracing
 
 load_dotenv()
 
 AZURE_VOICE_ENDPOINT = os.getenv("AZURE_VOICE_ENDPOINT")
 AZURE_VOICE_KEY = os.getenv("AZURE_VOICE_KEY")
+
+LOCAL_TRACING_ENABLED = os.getenv("LOCAL_TRACING_ENABLED", "true") == "true"
+init_tracing(local_tracing=LOCAL_TRACING_ENABLED)
 
 base_path = Path(__file__).parent
 
@@ -38,7 +46,6 @@ prompt = (Path(__file__).parent / "prompt.txt").read_text()
 async def lifespan(app: FastAPI):
     try:
         # manage lifetime scope
-        pass
         yield
     finally:
         # remove all stray sockets
@@ -107,12 +114,13 @@ async def voice_endpoint(websocket: WebSocket):
             key_credential=AzureKeyCredential(AZURE_VOICE_KEY),
             azure_deployment="gpt-4o-realtime-preview",
         ) as rt:
-            
+
             # get current messages for instructions
             chat_items = await websocket.receive_json()
             message = Message(**chat_items)
 
             # create voice system message
+            # TODO: retrieve context from chat messages via thread id
             system_message = env.get_template("script.jinja2").render(
                 customer="Seth",
                 purchases=purchases,
@@ -130,3 +138,12 @@ async def voice_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect as e:
         print("Voice Socket Disconnected", e)
+
+
+@repeat(seconds=60)
+@trace
+async def cleanup_sessions():
+    await SessionManager.clear_closed_sessions()
+
+
+FastAPIInstrumentor.instrument_app(app, exclude_spans=["send", "receive"])

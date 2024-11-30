@@ -61,7 +61,9 @@ jobs:
                                 "AZURE_OPENAI_ENDPOINT=secretref:azure-openai-endpoint" \
                                 "AZURE_OPENAI_API_KEY=secretref:azure-openai-api-key" \
                                 "AZURE_VOICE_ENDPOINT=secretref:azure-voice-endpoint" \
-                                "AZURE_VOICE_KEY=secretref:azure-voice-key"
+                                "AZURE_VOICE_KEY=secretref:azure-voice-key" \
+                                "APPINSIGHTS_CONNECTIONSTRING=secretref:appinsights-connectionstring" \
+                                "LOCAL_TRACING_ENABLED=false"
 
       - name: Logout
         run: |

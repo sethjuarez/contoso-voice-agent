@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import json
 from typing import Any, AsyncGenerator
 from rtclient import (
     InputAudioBufferAppendMessage,
@@ -47,6 +48,7 @@ class RealtimeVoiceClient:
         if self.client is not None:
             await self.client.close()
 
+    @trace
     async def send_user_message(self, message: str):
         if self.client is None:
             raise Exception("Client not set")
@@ -68,6 +70,7 @@ class RealtimeVoiceClient:
             )
         )
 
+    @trace
     async def send_user_message_with_response(self, message: str):
         if self.client is None:
             raise Exception("Client not set")
@@ -95,11 +98,13 @@ class RealtimeVoiceClient:
 
         await self.client.send(ResponseCreateMessage(response=response))
 
+    @trace
     async def trigger_response(self):
         if self.client is None:
             raise Exception("Client not set")
         await self.client.send(ResponseCreateMessage())
 
+    @trace
     async def send_system_message(self, message: str):
         if self.client is None:
             raise Exception("Client not set")
@@ -121,6 +126,7 @@ class RealtimeVoiceClient:
             )
         )
 
+    @trace
     async def send_session_update(self, instructions: str = None):
         if self.client is None:
             raise Exception("Client not set")
@@ -149,7 +155,6 @@ class RealtimeVoiceClient:
 
         await self.client.send(InputAudioBufferAppendMessage(audio=audio_data))
 
-    @trace(name="realtime_loop")
     async def receive_message(self) -> AsyncGenerator[RealTimeItem, None]:
         if self.client is None:
             raise Exception("Client not set")
@@ -164,9 +169,14 @@ class RealtimeVoiceClient:
                     print("Session Created Message")
                     print(f"  Model: {message.session.model}")
                     print(f"  Session Id: {message.session.id}")
-                    with Tracer.start("session.created") as tr:
-                        tr("model", message.session.model)
-                        tr("session_id", message.session.id)
+
+                    yield RealTimeItem(
+                        type="session.created",
+                        content={
+                            "model": message.session.model,
+                            "session": message.session.id,
+                        },
+                    )
 
             case "error":
                 if self.verbose:

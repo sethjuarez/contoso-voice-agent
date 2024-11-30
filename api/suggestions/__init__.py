@@ -4,7 +4,7 @@ import prompty.azure
 from typing import List
 
 from pydantic import BaseModel
-from prompty.core import AsyncPromptyStream
+from prompty.tracer import trace
 
 suggestions_prompty = prompty.load("suggestions.prompty")
 writeup_prompty = prompty.load("writeup.prompty")
@@ -13,7 +13,7 @@ class SimpleMessage(BaseModel):
     name: str
     text: str
 
-
+@trace
 async def create_suggestion(messages: List[SimpleMessage]):
     result = await prompty.execute_async(
         suggestions_prompty,
@@ -33,6 +33,7 @@ async def create_suggestion(messages: List[SimpleMessage]):
         yield item
 
 
+@trace
 async def suggestion_requested(messages: List[SimpleMessage]):
     result: str = await prompty.execute_async(
         writeup_prompty,
@@ -48,7 +49,6 @@ async def suggestion_requested(messages: List[SimpleMessage]):
     )
 
     return result.lower().startswith("y")
-
 
 
 async def render(messages: List[SimpleMessage]):

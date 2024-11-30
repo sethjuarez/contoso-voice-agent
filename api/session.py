@@ -1,13 +1,20 @@
 import asyncio
 import json
-from pathlib import Path
+from prompty.tracer import trace
 from typing import Dict, List, Literal
-from fastapi import WebSocket
+from fastapi import WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 from prompty.tracer import Tracer
 from fastapi.websockets import WebSocketState
 from api.chat import create_response
-from api.models import ClientMessage, full_assistant, send_action, send_context, start_assistant, stop_assistant, stream_assistant
+from api.models import (
+    ClientMessage,
+    send_action,
+    send_context,
+    start_assistant,
+    stop_assistant,
+    stream_assistant,
+)
 from api.realtime import RealtimeVoiceClient
 
 
@@ -35,7 +42,9 @@ class RealtimeSession:
     async def send_realtime_instructions(self, instructions: str):
         await self.realtime.send_session_update(instructions)
 
+    @trace
     async def receive_realtime(self):
+        signature = "api.session.RealtimeSession.receive_realtime"
         while self.realtime != None and not self.realtime.closed:
             async for message in self.realtime.receive_message():
                 # print("received message", message.type)
@@ -43,18 +52,39 @@ class RealtimeSession:
                     continue
 
                 match message.type:
+                    case "session.created":
+                        with Tracer.start("session_created") as t:
+                            t(Tracer.SIGNATURE, signature)
+                            t(Tracer.INPUTS, message.content)
+                            await self.send_console(
+                                Message(type="console", payload=json.dumps(message.content))
+                            )
                     case "conversation.item.input_audio_transcription.completed":
                         with Tracer.start("receive_user_transcript") as t:
-                            t("message", message.content)
-                            t("role", "user")
+                            t(Tracer.SIGNATURE, signature)
+                            t(
+                                Tracer.INPUTS,
+                                {
+                                    "type": "conversation.item.input_audio_transcription.completed",
+                                    "role": "user",
+                                    "content": message.content,
+                                },
+                            )
                             await self.send_message(
                                 Message(type="user", payload=message.content)
                             )
 
                     case "response.audio_transcript.done":
                         with Tracer.start("receive_assistant_transcript") as t:
-                            t("message", message.content)
-                            t("role", "assistant")
+                            t(Tracer.SIGNATURE, signature)
+                            t(
+                                Tracer.INPUTS,
+                                {
+                                    "type": "response.audio_transcript.done",
+                                    "role": "assistant",
+                                    "content": message.content,
+                                },
+                            )
                             # audio stream
                             await self.send_message(
                                 Message(type="assistant", payload=message.content)
@@ -67,25 +97,48 @@ class RealtimeSession:
 
                     case "response.failed":
                         with Tracer.start("realtime_failure") as t:
-                            t("failure", message.content)
+                            t(Tracer.SIGNATURE, signature)
+                            t(
+                                Tracer.INPUTS,
+                                {
+                                    "failure": message.content,
+                                },
+                            )
                             print("Realtime failure", message.content)
-                            
+
                     case "turn_detected":
                         # send interrupt message
-                        # print("turn detected")
-                        await self.send_console(
-                            Message(type="interrupt", payload="")
-                        )
+                        with Tracer.start("turn_detected") as t:
+                            t(Tracer.SIGNATURE, signature)
+                            t(
+                                Tracer.INPUTS,
+                                {
+                                    "type": "turn_detected",
+                                    "content": message.content,
+                                },
+                            )
+                            await self.send_console(
+                                Message(type="interrupt", payload="")
+                            )
                     case _:
                         with Tracer.start("unhandled_message") as t:
-                            t("message", message)
+                            t(Tracer.SIGNATURE, signature)
+                            t(
+                                Tracer.INPUTS,
+                                {
+                                    "type": "unhandled_message",
+                                    "content": message.content,
+                                },
+                            )
                             await self.send_console(
                                 Message(type="console", payload="Unhandled message")
                             )
 
         self.realtime = None
 
+    @trace
     async def receive_client(self):
+        signature = "api.session.RealtimeSession.receive_client"
         while self.client.client_state != WebSocketState.DISCONNECTED:
             message = await self.client.receive_text()
 
@@ -96,13 +149,22 @@ class RealtimeSession:
                 case "audio":
                     await self.realtime.send_audio_message(m.payload)
                 case "user":
-                    await self.realtime.send_user_message(m.payload)
+                    with Tracer.start("user_message") as t:
+                        t(Tracer.SIGNATURE, signature)
+                        t(Tracer.INPUTS, m.model_dump())
+                        await self.realtime.send_user_message(m.payload)
                 case "interrupt":
-                    await self.realtime.trigger_response()
+                    with Tracer.start("trigger_response") as t:
+                        t(Tracer.SIGNATURE, signature)
+                        t(Tracer.INPUTS, m.model_dump())
+                        await self.realtime.trigger_response()
                 case _:
-                    await self.send_console(
-                        Message(type="console", payload="Unhandled message")
-                    )
+                    with Tracer.start("user_message") as t:
+                        t(Tracer.SIGNATURE, signature)
+                        t(Tracer.INPUTS, m.model_dump())
+                        await self.send_console(
+                            Message(type="console", payload="Unhandled message")
+                        )
 
     async def close(self):
         try:
@@ -126,37 +188,68 @@ class ChatSession:
     def add_realtime(self, realtime: RealtimeSession):
         self.realtime = realtime
 
+    def is_closed(self):
+        client_closed = (
+            self.client == None
+            or self.client.client_state == WebSocketState.DISCONNECTED
+        )
+        realtime_closed = self.realtime == None or self.realtime.realtime.closed
+        return client_closed and realtime_closed
+
+    @trace
     async def start_chat(self):
         try:
             while (
                 self.client != None
                 and self.client.client_state != WebSocketState.DISCONNECTED
             ):
-                message = await self.client.receive_json()
-                msg = ClientMessage(**message)
+                with Tracer.start("chat_turn") as t:
+                    t(Tracer.SIGNATURE, "api.session.ChatSession.start_chat")
+                    message = await self.client.receive_json()
+                    msg = ClientMessage(**message)
 
-                # start assistant
-                await self.client.send_json(start_assistant())
+                    t(
+                        Tracer.INPUTS,
+                        {
+                            "request": msg.text,
+                            "image": msg.image != None,
+                        },
+                    )
 
-                # create response
-                response = await create_response(msg.name, msg.text, self.context, msg.image)
+                    # start assistant
+                    await self.client.send_json(start_assistant())
 
-                # unpack response
-                text = response["response"]
-                context = response["context"]
-                call = response["call"]
+                    # create response
+                    response = await create_response(
+                        msg.name, msg.text, self.context, msg.image
+                    )
 
-                # send response
-                await self.client.send_json(stream_assistant(text))
-                await self.client.send_json(stop_assistant())
+                    # unpack response
+                    text = response["response"]
+                    context = response["context"]
+                    call = response["call"]
 
-                # send context
-                await self.client.send_json(send_context(context))
-                await self.client.send_json(
-                    send_action("call", json.dumps({"score": call}))
-                )
-                self.context.append(response["context"])
+                    # send response
+                    await self.client.send_json(stream_assistant(text))
+                    await self.client.send_json(stop_assistant())
 
+                    # send context
+                    await self.client.send_json(send_context(context))
+                    await self.client.send_json(
+                        send_action("call", json.dumps({"score": call}))
+                    )
+                    self.context.append(response["context"])
+                    t(
+                        Tracer.RESULT,
+                        {
+                            "response": text,
+                            "context": context,
+                            "call": call,
+                        },
+                    )
+
+        except WebSocketDisconnect as e:
+            raise e
         except Exception as e:
             print("Error in chat session", e)
 
@@ -203,3 +296,13 @@ class SessionManager:
             except Exception as e:
                 print(f"Error closing session ({thread_id})", e)
         cls.sessions = {}
+
+    @classmethod
+    async def clear_closed_sessions(cls):
+        threads = cls.sessions.keys()
+        for thread_id in threads:
+            if cls.sessions[thread_id].is_closed():
+                try:
+                    del cls.sessions[thread_id]
+                except Exception as e:
+                    print(f"Error closing session ({thread_id})", e)

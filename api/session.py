@@ -198,3 +198,12 @@ class SessionManager:
         if thread_id in cls.sessions:
             await cls.sessions[thread_id].close()
             del cls.sessions[thread_id]
+
+    @classmethod
+    async def clear_sessions(cls):
+        for thread_id in cls.sessions:
+            try:
+                await cls.sessions[thread_id].close()
+            except Exception as e:
+                print(f"Error closing session ({thread_id})", e)
+        cls.sessions = {}

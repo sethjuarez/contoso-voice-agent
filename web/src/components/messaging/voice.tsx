@@ -18,6 +18,8 @@ import { useSound } from "@/audio/useSound";
 import { ContextState, useContextStore } from "@/store/context";
 import usePersistStore from "@/store/usePersistStore";
 import { ChatState, useChatStore } from "@/store/chat";
+import { ActionClient } from "@/socket/action";
+import Content from "./content";
 
 const Voice = () => {
   const [settings, setSettings] = useState<boolean>(false);
@@ -38,12 +40,15 @@ const Voice = () => {
   const voiceRef = useRef<VoiceClient | null>(null);
 
   const handleServerMessage = async (serverEvent: Message) => {
+    const client = new ActionClient(stateRef.current!, contextRef.current!);
     switch (serverEvent.type) {
       case "assistant":
         console.log("assistant:", serverEvent.payload);
+        client.sendVoiceUserMessage(serverEvent.payload);
         break;
       case "user":
         console.log("user:", serverEvent.payload);
+        client.sendVoiceAssistantMessage(serverEvent.payload);
         break;
       case "console":
         console.log(serverEvent.payload);
@@ -121,7 +126,6 @@ const Voice = () => {
     }
   }, [context, state]);
 
-
   useEffect(() => {
     if (contextRef.current && contextRef.current.call >= 5) {
       contextRef.current.setCallScore(0);
@@ -129,39 +133,49 @@ const Voice = () => {
     }
   }, [contextRef.current?.call, startCall]);
 
+  const onCloseSuggestions = () => {
+    alert("close suggestions");
+  };
+
   return (
     <div className={styles.voice}>
-      {callState === "idle" && (
-        <div className={styles.voiceButton} onClick={startCall}>
-          <FiPhone size={32} />
-        </div>
-      )}
-      {callState !== "idle" && (
-        <>
-          <div
-            className={clsx(styles.callButton, styles.callRing)}
-            ref={buttonRef}
-            onClick={answerCall}
-          >
-            <FiPhoneCall size={32} />
+      <Content
+        suggestions={contextRef.current?.suggestion}
+        onClose={onCloseSuggestions}
+      />
+      <div className={styles.voiceControl}>
+        {callState === "idle" && (
+          <div className={styles.voiceButton} onClick={startCall}>
+            <FiPhone size={32} />
           </div>
-          <div className={styles.callHangup} onClick={hangupCall}>
-            <FiPhoneOff size={32} />
-          </div>
-        </>
-      )}
-      <div
-        className={styles.settingsButton}
-        ref={settingsRef}
-        onClick={toggleSettings}
-      >
-        {settings ? (
-          <FiChevronsLeft size={32} />
-        ) : (
-          <FiChevronsRight size={32} />
         )}
+        {callState !== "idle" && (
+          <>
+            <div
+              className={clsx(styles.callButton, styles.callRing)}
+              ref={buttonRef}
+              onClick={answerCall}
+            >
+              <FiPhoneCall size={32} />
+            </div>
+            <div className={styles.callHangup} onClick={hangupCall}>
+              <FiPhoneOff size={32} />
+            </div>
+          </>
+        )}
+        <div
+          className={styles.settingsButton}
+          ref={settingsRef}
+          onClick={toggleSettings}
+        >
+          {settings ? (
+            <FiChevronsLeft size={32} />
+          ) : (
+            <FiChevronsRight size={32} />
+          )}
+        </div>
+        {settings && <VoiceInput />}
       </div>
-      {settings && <VoiceInput />}
     </div>
   );
 };

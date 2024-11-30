@@ -1,6 +1,8 @@
 import os
 import asyncio
 from pathlib import Path
+from typing import List
+from fastapi.responses import StreamingResponse
 from rtclient import RTLowLevelClient
 from api.realtime import RealtimeVoiceClient
 from api.session import RealtimeSession, SessionManager
@@ -8,6 +10,9 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from azure.core.credentials import AzureKeyCredential
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from api.session import SessionManager
+
+from api.suggestions import SimpleMessage, create_suggestion, suggestion_requested
 
 AZURE_VOICE_ENDPOINT = os.getenv("AZURE_VOICE_ENDPOINT")
 AZURE_VOICE_KEY = os.getenv("AZURE_VOICE_KEY")
@@ -30,7 +35,7 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         # remove all stray sockets
-        pass
+        SessionManager.clear_sessions()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -47,6 +52,21 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.post("/api/suggestion")
+async def suggestion(messages: List[SimpleMessage]):
+    return StreamingResponse(
+        create_suggestion(messages),
+        media_type="text/event-stream",
+    )
+
+@app.post("/api/request")
+async def request(messages: List[SimpleMessage]):
+    requested = await suggestion_requested(messages)
+    return {
+        "requested": requested,
+    }
 
 
 @app.websocket("/api/chat")

@@ -6,10 +6,26 @@
   z-index: 10;
   margin-left: 2rem;
   margin-bottom: 2rem;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
   z-index: 10;
+}
+
+.voiceWindow {
+  display: flex;
+  margin-bottom: 0.75rem;
+  flex-direction: column;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: calc(100vh - 120px);
+  width: calc(100vw - 612px);
+}
+
+.voiceControl {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
 }
 
 .voiceButton {

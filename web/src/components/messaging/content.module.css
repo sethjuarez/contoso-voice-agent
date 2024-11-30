@@ -1,0 +1,64 @@
+.contentWindow {
+  display: flex;
+  margin-bottom: 0.75rem;
+  flex-direction: column;
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  height: calc(100vh - 120px);
+  width: calc(100vw - 612px);
+}
+
+.contentHeader {
+  display: flex;
+  padding: 0.5rem;
+  flex-direction: row;
+  text-align: right;
+  gap: 8px;
+}
+
+.contentTitle {
+  display: flex;
+  padding: 10px 1rem 0.5rem;
+  color: var(--color-zinc-400);
+  flex-direction: row;
+  text-align: right;
+  gap: 16px;
+  font-size: x-large;
+  align-items: center;
+}
+
+.content {
+  padding: 10px 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.content img {
+  max-width: calc(100vw - 700px);
+  margin-top: 1rem;
+}
+
+.content h1, .content h2, .content h3 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.content ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.contentIcon {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  stroke: var(--color-zinc-500);
+  user-select: none;
+}
+
+.grow {
+  flex-grow: 1;
+}

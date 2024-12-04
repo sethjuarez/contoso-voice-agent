@@ -128,7 +128,7 @@ async def voice_endpoint(websocket: WebSocket):
                 products=products,
             )
 
-            session = RealtimeSession(RealtimeVoiceClient(rt), websocket)
+            session = RealtimeSession(RealtimeVoiceClient(rt, verbose=False), websocket)
             await session.send_realtime_instructions(system_message)
             tasks = [
                 asyncio.create_task(session.receive_realtime()),

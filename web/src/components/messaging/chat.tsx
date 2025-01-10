@@ -123,8 +123,8 @@ const Chat = ({ options }: Props) => {
   };
 
   const clear = () => {
-    state && state.resetChat();
-    context && context.clearContext();
+    if(state) state.resetChat();
+    if(context) context.clearContext();
     if (server.current && server.current.ready) {
       server.current.close();
       server.current = null;
@@ -137,7 +137,7 @@ const Chat = ({ options }: Props) => {
     if (state?.currentImage) {
       removeCachedBlob(state?.currentImage);
     }
-    state && state.setCurrentImage(null);
+    if(state) state.setCurrentImage(null);
     setCurrentImage(null);
   };
 
@@ -244,7 +244,7 @@ const Chat = ({ options }: Props) => {
         <div
           className={styles.chatButton}
           onClick={() => {
-            state && state.setOpen(!state.open);
+            if(state) state.setOpen(!state.open);
             scrollChat();
           }}
         >

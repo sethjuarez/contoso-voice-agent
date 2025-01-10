@@ -64,7 +64,7 @@ const VideoImagePicker = ({ setCurrentImage }: Props) => {
         videoRef.current.disablePictureInPicture = true;
         videoRef.current.srcObject = stream;
         setShowCamera(true);
-      } catch (err) {
+      } catch {
         alert("Error accessing camera.");
         videoRef.current.srcObject = null;
         setShowCamera(false);

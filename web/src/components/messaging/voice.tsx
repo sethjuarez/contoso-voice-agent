@@ -24,14 +24,9 @@ import {
   suggestionRequested,
 } from "@/socket/action";
 import Content from "./content";
-import { User } from "@/data/user";
+import { useUserStore } from "@/store/user";
 
-type Props = {
-  user: User;
-};
-
-
-const Voice = ({ user }: Props) => {
+const Voice = () => {
   const contentRef = useRef<string[]>([]);
 
   const [settings, setSettings] = useState<boolean>(false);
@@ -54,6 +49,8 @@ const Voice = ({ user }: Props) => {
   const buttonRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
   const voiceRef = useRef<VoiceClient | null>(null);
+
+  const user = usePersistStore(useUserStore, (state) => state.user);
 
 
   const handleServerMessage = async (serverEvent: Message) => {
@@ -123,7 +120,7 @@ const Voice = ({ user }: Props) => {
         type: "messages",
         payload: JSON.stringify(client.retrieveMessages()),
       });
-      await voiceRef.current.sendUserMessage(user.name || "Seth");
+      await voiceRef.current.sendUserMessage(user?.name || "Seth");
       await voiceRef.current.sendCreateResponse();
     }
   };

@@ -36,7 +36,7 @@ export interface User {
 const checkUrlStatus = async (url: string): Promise<boolean> => {
   try {
     const response = await fetch(url);
-    return response.status === 404;
+    return response.ok;
   } catch  {
     return false;
   }
@@ -46,13 +46,13 @@ export const fetchUser = async (): Promise<User> => {
   let u: Claim[] = defaultUser;
   try {
     const response = await fetch(`${WEB_ENDPOINT}/.auth/me`);
-    if (response.status === 200) {
+    if (response.ok) {
       console.log("using easyauth user")
       u = await response.json();
     }
-  } catch (error) {
+  } catch {
     // ignore
-    console.log("Error fetching user", error);
+    console.log("Error fetching user");
   }
 
   const name =

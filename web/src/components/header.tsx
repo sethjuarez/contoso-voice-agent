@@ -1,20 +1,33 @@
 "use client";
 import Block from "./block";
 import styles from "./header.module.css";
-import { getCategories } from "@/store/products";
+import { Category } from "@/store/products";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { routes } from "@/data/routes";
-import { User } from "@/data/user";
+import { useUserStore } from "@/store/user";
 import { BiSolidUserCircle } from "react-icons/bi";
 import Link from "next/link";
+import usePersistStore from "@/store/usePersistStore";
+import { useEffect } from "react";
+import { fetchUser } from "@/data/user";
 
 type Props = {
-  user: User;
+  categories: Category[];
 };
 
-const Header = ({ user }: Props) => {
+const Header = ({ categories }: Props) => {
+  //const categories = getCategories();
 
-  const categories = getCategories();
+  const userState = usePersistStore(useUserStore, (state) => state);
+  const user = usePersistStore(useUserStore, (state) => state.user);
+  /** Current User */
+  useEffect(() => {
+    if (!userState?.user) {
+      fetchUser().then((u) => {
+        userState?.setUser(u.name, u.email, u.image);
+      });
+    }
+  }, [userState, userState?.user]);
 
   const getUserIcon = () => {
     if (user && user.image && user.image !== "undefined") {
@@ -51,8 +64,8 @@ const Header = ({ user }: Props) => {
       <div className={styles.grow} />
       <div className={styles.user}>
         <div>
-          <div className={styles.username}>{user.name}</div>
-          <div className={styles.email}>{user.email}</div>
+          <div className={styles.username}>{user?.name}</div>
+          <div className={styles.email}>{user?.email}</div>
         </div>
         <div className="">{getUserIcon()}</div>
       </div>

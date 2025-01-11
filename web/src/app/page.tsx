@@ -4,17 +4,15 @@ import { getCategories } from "@/store/products";
 import Chat from "@/components/messaging/chat";
 import Section from "@/components/section";
 import Voice from "@/components/messaging/voice";
-import { fetchUser } from "@/data/user";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
 const Home = async () => {
   const categories = getCategories();
-  const user = await fetchUser();
 
   return (
     <>
-      <Header user={user} />
+      <Header categories={categories} />
       <Block outerClassName={styles.heroContent}>
         <div className={styles.heroTitle}>Contoso Outdoor Company</div>
         <div className={styles.heroText}>
@@ -24,7 +22,7 @@ const Home = async () => {
         <div className={styles.heroSubText}>
           Choose from a variety of products to help you explore the outdoors.
           From camping to hiking, we have you covered with the best gear and the
-          best prices. {user.name}
+          best prices.
         </div>
       </Block>
       <>
@@ -32,8 +30,8 @@ const Home = async () => {
           <Section key={category.slug} index={i} category={category} />
         ))}
       </>
-      <Chat user={user} options={{ video: true, file: true }} />
-      <Voice user={user} />
+      <Chat options={{ video: true, file: true }} />
+      <Voice />
       <Footer />
     </>
   );

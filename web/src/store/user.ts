@@ -8,7 +8,7 @@ export interface User {
 }
 
 export interface UserState {
-  user: User | null;
+  user: User | undefined;
   setUser: (name: string, email: string, image?: string) => void;
   resetUser: () => void;
 }
@@ -16,10 +16,10 @@ export interface UserState {
 export const useUserStore = create<UserState>()(
   persist(
     (set) => ({
-      user: null,
+      user: undefined,
       setUser: (name, email, image) =>
         set({ user: { name: name, email: email, image: image } }),
-      resetUser: () => set({ user: null }),
+      resetUser: () => set({ user: undefined }),
     }),
     {
       name: "user-storage",

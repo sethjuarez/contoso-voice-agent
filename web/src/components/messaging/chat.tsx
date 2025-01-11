@@ -15,18 +15,17 @@ import { SocketMessage, SocketServer } from "@/store/socket";
 import clsx from "clsx";
 import { ContextState, useContextStore } from "@/store/context";
 import { ActionClient } from "@/socket/action";
-import { User } from "@/data/user";
+import { useUserStore } from "@/store/user";
 
 interface ChatOptions {
   video?: boolean;
   file?: boolean;
 }
 type Props = {
-  user: User;
   options?: ChatOptions;
 };
 
-const Chat = ({ user, options }: Props) => {
+const Chat = ({ options }: Props) => {
   /** Socket */
   const server = useRef<SocketServer | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
@@ -38,6 +37,8 @@ const Chat = ({ user, options }: Props) => {
 
   const context = usePersistStore(useContextStore, (state) => state);
   const contextRef = useRef<ContextState | undefined>();
+
+  const user = usePersistStore(useUserStore, (state) => state.user);
 
   /** Current State */
   useEffect(() => {
@@ -61,8 +62,8 @@ const Chat = ({ user, options }: Props) => {
     if (stateRef.current) {
       // get current message
       const turn: Turn = {
-        name: user.name || "Seth Juarez",
-        avatar: user.image || "undefined",
+        name: user?.name || "Seth Juarez",
+        avatar: user?.image || "undefined",
         image: stateRef.current.currentImage,
         message: stateRef.current.message,
         status: "done",
@@ -71,8 +72,8 @@ const Chat = ({ user, options }: Props) => {
 
       // can replace with current user
       stateRef.current.sendMessage(
-        user.name || "Seth Juarez",
-        user.image || "undefined"
+        user?.name || "Seth Juarez",
+        user?.image || "undefined"
       );
       // reset image
       setCurrentImage(null);

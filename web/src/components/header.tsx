@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import Block from "./block";
 import styles from "./header.module.css";
 import { getCategories } from "@/store/products";
@@ -31,10 +30,8 @@ const Header = () => {
   const getUserIcon = () => {
     if (user && user.image && user.image !== "undefined") {
       return (
-        <Image
+        <img
           src={user.image}
-          width={32}
-          height={32}
           alt={user.name}
           className={styles.userIcon}
         />

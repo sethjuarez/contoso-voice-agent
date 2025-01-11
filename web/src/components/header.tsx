@@ -12,6 +12,7 @@ import { useUserStore } from "@/store/user";
 import { useEffect } from "react";
 import { fetchUser } from "@/data/user";
 import { BiSolidUserCircle } from "react-icons/bi";
+import Link from "next/link";
 
 const Header = () => {
   const userState = usePersistStore(useUserStore, (state) => state);
@@ -49,20 +50,20 @@ const Header = () => {
   return (
     <Block innerClassName={styles.innerBlock}>
       <div className={styles.baricon}>
-        <a title="home" href="/">
+        <Link title="home" href="/">
           <GiHamburgerMenu size={22} className={styles.username} />
-        </a>
+        </Link>
       </div>
       <div className={styles.categories}>
         {categories.map((category) => (
-          <a href={"#"} key={category.slug} className={styles.category}>
+          <Link href={"#"} key={category.slug} className={styles.category}>
             {category.name}
-          </a>
+          </Link>
         ))}
         {routes.map((route) => (
-          <a href={route.href} key={route.id} className={styles.category}>
+          <Link href={route.href} key={route.id} className={styles.category}>
             {route.title}
-          </a>
+          </Link>
         ))}
       </div>
       <div className={styles.grow} />
@@ -71,9 +72,7 @@ const Header = () => {
           <div className={styles.username}>{user?.name}</div>
           <div className={styles.email}>{user?.email}</div>
         </div>
-        <div className="">
-          {getUserIcon()}
-        </div>
+        <div className="">{getUserIcon()}</div>
       </div>
     </Block>
   );

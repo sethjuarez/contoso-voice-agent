@@ -3,6 +3,7 @@ import styles from "./footer.module.css";
 import { getCategories } from "@/store/products";
 import Image from "next/image";
 import { routes } from "@/data/routes";
+import Link from "next/link";
 
 const Footer = async ({
   searchParams,
@@ -22,12 +23,12 @@ const Footer = async ({
       innerClassName={styles.innerBlock}
     >
       <div className={styles.baricon}>
-        <a
+        <Link
           title="home"
           href={`/${searchParams?.type ? "?type=" + searchParams.type : ""}`}
         >
           <Image src="/images/logo.png" alt="logo" width={120} height={120} />
-        </a>
+        </Link>
         <div className={styles.company}>Contoso Outdoor Company</div>
       </div>
 
@@ -35,13 +36,9 @@ const Footer = async ({
         <div>What we do</div>
         <div className={styles.innerCategory}>
           {categories.slice(0, 4).map((category) => (
-            <a
-              href={"#"}
-              key={category.slug}
-              className={styles.category}
-            >
+            <Link href={"#"} key={category.slug} className={styles.category}>
               {category.name}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
@@ -49,13 +46,13 @@ const Footer = async ({
         <div>&nbsp;</div>
         <div className={styles.innerCategory}>
           {categories.slice(4, 9).map((category) => (
-            <a
+            <Link
               href={`/category/${category.slug}`}
               key={category.slug}
               className={styles.category}
             >
               {category.name}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
@@ -63,9 +60,9 @@ const Footer = async ({
         <div>Need Help?</div>
         <div className={styles.innerCategory}>
           {routes.map((route) => (
-            <a href={route.href} key={route.id} className={styles.category}>
+            <Link href={route.href} key={route.id} className={styles.category}>
               {route.title}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
@@ -73,9 +70,9 @@ const Footer = async ({
         <div>Legal</div>
         <div className={styles.innerCategory}>
           {legal.map((l, i) => (
-            <a href={legalLinks[i]} key={l} className={styles.category}>
+            <Link href={legalLinks[i]} key={l} className={styles.category}>
               {l.charAt(0).toUpperCase() + l.slice(1)}
-            </a>
+            </Link>
           ))}
         </div>
       </div>

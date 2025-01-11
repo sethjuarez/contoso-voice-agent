@@ -50,3 +50,14 @@
   line-height: 1rem;
   color: var(--color-zinc-400);
 }
+
+.simpleUser {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: solid 1px var(--color-zinc-500);
+  color: var(--color-zinc-500);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

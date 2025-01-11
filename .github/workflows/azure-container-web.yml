@@ -37,10 +37,16 @@ jobs:
       run: |
         echo "API_ENDPOINT=$(az containerapp show --name $ROOT_NAME-api -g contoso-concierge --query properties.configuration.ingress.fqdn | tr -d '"')" >> "$GITHUB_ENV"
 
+    - name: retrieve web endpoint
+      id: retrieve-web-endpoint
+      run: |
+        echo "WEB_ENDPOINT=$(az containerapp show --name $ROOT_NAME-web -g contoso-concierge --query properties.configuration.ingress.fqdn | tr -d '"')" >> "$GITHUB_ENV"
+
     - name: rewrite endpoint location
       run: |
         echo "export const WS_ENDPOINT = 'wss://$API_ENDPOINT';" > web/src/store/endpoint.ts
         echo "export const API_ENDPOINT = 'https://$API_ENDPOINT';" >> web/src/store/endpoint.ts
+        echo "export const WEB_ENDPOINT = 'https://$WEB_ENDPOINT';" >> web/src/store/endpoint.ts
 
         cat web/src/store/endpoint.ts
 

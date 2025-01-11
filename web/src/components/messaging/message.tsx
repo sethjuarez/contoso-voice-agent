@@ -8,6 +8,7 @@ import { useState } from "react";
 import { fetchCachedImage } from "@/store/images";
 import Waiting from "./waiting";
 import { HiOutlineSpeakerWave } from "react-icons/hi2";
+import { BiSolidUserCircle } from "react-icons/bi";
 
 type Props = {
   turn: Turn;
@@ -17,26 +18,34 @@ type Props = {
 const getAvatar = (turn: Turn) => {
   if (turn.type === "assistant") {
     return (
-        <Image
-          className={styles.assistantIcon}
-          src={"/images/trees.png"}
-          width={32}
-          height={32}
-          alt="Assistant"
-        />
+      <Image
+        className={styles.assistantIcon}
+        src={"/images/trees.png"}
+        width={32}
+        height={32}
+        alt="Assistant"
+      />
     );
   } else if (turn.avatar) {
-    return (
-      <div>
-        <Image
-          src={turn.avatar}
-          width={38}
-          height={38}
-          alt={turn.name}
-          className={styles.userIcon}
-        />
-      </div>
-    );
+    if (turn.avatar === "undefined") {
+      return (
+        <div className={styles.simpleUser}>
+          <BiSolidUserCircle size={38} />
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <Image
+            src={turn.avatar}
+            width={38}
+            height={38}
+            alt={turn.name}
+            className={styles.userIcon}
+          />
+        </div>
+      );
+    }
   } else {
     return (
       <div className={styles.assistantIcon}>

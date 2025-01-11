@@ -12,13 +12,11 @@ import FileImagePicker from "./fileimagepicker";
 import { fetchCachedImage, removeCachedBlob } from "@/store/images";
 import VideoImagePicker from "./videoimagepicker";
 import { WS_ENDPOINT } from "@/store/endpoint";
-import {
-  SocketMessage,
-  SocketServer,
-} from "@/store/socket";
+import { SocketMessage, SocketServer } from "@/store/socket";
 import clsx from "clsx";
 import { ContextState, useContextStore } from "@/store/context";
 import { ActionClient } from "@/socket/action";
+import { fetchUser } from "@/data/user";
 
 interface ChatOptions {
   video?: boolean;
@@ -41,7 +39,7 @@ const Chat = ({ options }: Props) => {
   const context = usePersistStore(useContextStore, (state) => state);
   const contextRef = useRef<ContextState | undefined>();
 
-  const user = useUserStore((state) => state.user);
+  const userState = usePersistStore(useUserStore, (state) => state);
 
   /** Current State */
   useEffect(() => {
@@ -59,14 +57,22 @@ const Chat = ({ options }: Props) => {
     contextRef.current = context;
   }, [context]);
 
+  /** Current User */
+  useEffect(() => {
+    if (!userState?.user) {
+      fetchUser().then((u) => {
+        userState?.setUser(u.name, u.email, u.image);
+      });
+    }
+  }, [userState, userState?.user]);
 
   /** Send */
   const sendMessage = async () => {
     if (stateRef.current) {
       // get current message
       const turn: Turn = {
-        name: user?.name || "Seth Juarez",
-        avatar: user?.image || "/people/sethjuarez.jpg",
+        name: userState?.user?.name || "Seth Juarez",
+        avatar: userState?.user?.image || "undefined",
         image: stateRef.current.currentImage,
         message: stateRef.current.message,
         status: "done",
@@ -75,8 +81,8 @@ const Chat = ({ options }: Props) => {
 
       // can replace with current user
       stateRef.current.sendMessage(
-        user?.name || "Seth Juarez",
-        user?.image || "/people/sethjuarez.jpg"
+        userState?.user?.name || "Seth Juarez",
+        userState?.user?.image || "undefined"
       );
       // reset image
       setCurrentImage(null);
@@ -91,7 +97,7 @@ const Chat = ({ options }: Props) => {
 
   /** Events */
   const serverCallback = (data: SocketMessage) => {
-    if(stateRef.current && contextRef.current) {
+    if (stateRef.current && contextRef.current) {
       const client = new ActionClient(stateRef.current, contextRef.current);
       client.execute(data);
     }
@@ -123,12 +129,13 @@ const Chat = ({ options }: Props) => {
   };
 
   const clear = () => {
-    if(state) state.resetChat();
-    if(context) context.clearContext();
+    if (state) state.resetChat();
+    if (context) context.clearContext();
     if (server.current && server.current.ready) {
       server.current.close();
       server.current = null;
     }
+    if(userState) userState.resetUser();
     clearImage();
   };
 
@@ -137,7 +144,7 @@ const Chat = ({ options }: Props) => {
     if (state?.currentImage) {
       removeCachedBlob(state?.currentImage);
     }
-    if(state) state.setCurrentImage(null);
+    if (state) state.setCurrentImage(null);
     setCurrentImage(null);
   };
 
@@ -244,7 +251,7 @@ const Chat = ({ options }: Props) => {
         <div
           className={styles.chatButton}
           onClick={() => {
-            if(state) state.setOpen(!state.open);
+            if (state) state.setOpen(!state.open);
             scrollChat();
           }}
         >

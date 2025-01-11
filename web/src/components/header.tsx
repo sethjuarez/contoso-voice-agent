@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import Block from "./block";
 import styles from "./header.module.css";
@@ -6,48 +7,55 @@ import { GiHamburgerMenu } from "react-icons/gi";
 //import { getServerSession } from "next-auth/next";
 //import { authOptions } from "../auth";
 import { routes } from "@/data/routes";
+import usePersistStore from "@/store/usePersistStore";
+import { useUserStore } from "@/store/user";
+import { useEffect } from "react";
+import { fetchUser } from "@/data/user";
+import { BiSolidUserCircle } from "react-icons/bi";
 
-const Header = async ({
-  searchParams,
-}: {
-  searchParams?: { [key: string]: string | string[] | undefined };
-}) => {
-  // TODO: Move to EasyAuth
-  /*
-  const session = await getServerSession(authOptions);
-  
-  const user = {
-    name: session?.user?.name || "Seth Juarez",
-    email: session?.user?.email || "sethjuarez@example.com",
-    image: session?.user?.image || "/people/sethjuarez.jpg",
-  };
-  */
-
-  const user = {
-    name: "Seth Juarez",
-    email: "sethjuarez@example.com",
-    image: "/people/sethjuarez.jpg",
-  };
+const Header = () => {
+  const userState = usePersistStore(useUserStore, (state) => state);
+  const user = usePersistStore(useUserStore, (state) => state.user);
+  /** Current User */
+  useEffect(() => {
+    if (!userState?.user) {
+      fetchUser().then((u) => {
+        userState?.setUser(u.name, u.email, u.image);
+      });
+    }
+  }, [userState, userState?.user]);
 
   const categories = getCategories();
+
+  const getUserIcon = () => {
+    if (user && user.image && user.image !== "undefined") {
+      return (
+        <Image
+          src={user.image}
+          width={32}
+          height={32}
+          alt={user.name}
+          className={styles.userIcon}
+        />
+      );
+    }
+    return (
+      <div className={styles.simpleUser}>
+        <BiSolidUserCircle size={38} />
+      </div>
+    );
+  };
 
   return (
     <Block innerClassName={styles.innerBlock}>
       <div className={styles.baricon}>
-        <a
-          title="home"
-          href={`/${searchParams?.type ? "?type=" + searchParams.type : ""}`}
-        >
+        <a title="home" href="/">
           <GiHamburgerMenu size={22} className={styles.username} />
         </a>
       </div>
       <div className={styles.categories}>
         {categories.map((category) => (
-          <a
-            href={"#"}
-            key={category.slug}
-            className={styles.category}
-          >
+          <a href={"#"} key={category.slug} className={styles.category}>
             {category.name}
           </a>
         ))}
@@ -60,17 +68,11 @@ const Header = async ({
       <div className={styles.grow} />
       <div className={styles.user}>
         <div>
-          <div className={styles.username}>{user.name}</div>
-          <div className={styles.email}>{user.email}</div>
+          <div className={styles.username}>{user?.name}</div>
+          <div className={styles.email}>{user?.email}</div>
         </div>
         <div className="">
-          <Image
-            src={user.image}
-            width={32}
-            height={32}
-            alt={user.name}
-            className={styles.userIcon}
-          />
+          {getUserIcon()}
         </div>
       </div>
     </Block>

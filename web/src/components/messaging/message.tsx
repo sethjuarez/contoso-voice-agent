@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Turn } from "@/store/chat";
 import styles from "./message.module.css";
 import { GrUser } from "react-icons/gr";
@@ -18,11 +17,9 @@ type Props = {
 const getAvatar = (turn: Turn) => {
   if (turn.type === "assistant") {
     return (
-      <Image
+      <img
         className={styles.assistantIcon}
         src={"/images/trees.png"}
-        width={32}
-        height={32}
         alt="Assistant"
       />
     );
@@ -36,10 +33,8 @@ const getAvatar = (turn: Turn) => {
     } else {
       return (
         <div>
-          <Image
+          <img
             src={turn.avatar}
-            width={38}
-            height={38}
             alt={turn.name}
             className={styles.userIcon}
           />

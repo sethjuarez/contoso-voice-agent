@@ -24,8 +24,7 @@ import {
   suggestionRequested,
 } from "@/socket/action";
 import Content from "./content";
-import { useUserStore } from "@/store/user";
-import { fetchUser, User } from "@/data/user";
+import { User } from "@/data/user";
 
 type Props = {
   user: User;

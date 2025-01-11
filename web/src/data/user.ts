@@ -36,7 +36,7 @@ export interface User {
 const checkUrlStatus = async (url: string): Promise<boolean> => {
   try {
     const response = await fetch(url);
-    return response.ok;
+    return response.ok && response.status === 200;
   } catch  {
     return false;
   }
@@ -62,8 +62,8 @@ export const fetchUser = async (): Promise<User> => {
     .toLowerCase()
     .replace(" ", "-")}.jpg`;
   if (await checkUrlStatus(image)) {
-    return { name, email };
-  } else {
     return { name, email, image };
+  } else {
+    return { name, email };
   }
 };

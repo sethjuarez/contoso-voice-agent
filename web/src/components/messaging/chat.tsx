@@ -39,6 +39,7 @@ const Chat = ({ options }: Props) => {
   const contextRef = useRef<ContextState | undefined>();
 
   const user = usePersistStore(useUserStore, (state) => state.user);
+  const userState = usePersistStore(useUserStore, (state) => state);
 
   /** Current State */
   useEffect(() => {
@@ -126,6 +127,7 @@ const Chat = ({ options }: Props) => {
       server.current.close();
       server.current = null;
     }
+    if(userState) userState.resetUser();
     clearImage();
   };
 

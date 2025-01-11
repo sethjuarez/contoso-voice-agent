@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import { GrPowerReset, GrClose, GrBeacon } from "react-icons/gr";
 import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { HiOutlinePaperAirplane } from "react-icons/hi2";
-import { useUserStore } from "@/store/user";
 import { ChatState, Turn, useChatStore } from "@/store/chat";
 import usePersistStore from "@/store/usePersistStore";
 import FileImagePicker from "./fileimagepicker";
@@ -16,17 +15,18 @@ import { SocketMessage, SocketServer } from "@/store/socket";
 import clsx from "clsx";
 import { ContextState, useContextStore } from "@/store/context";
 import { ActionClient } from "@/socket/action";
-import { fetchUser } from "@/data/user";
+import { User } from "@/data/user";
 
 interface ChatOptions {
   video?: boolean;
   file?: boolean;
 }
 type Props = {
+  user: User;
   options?: ChatOptions;
 };
 
-const Chat = ({ options }: Props) => {
+const Chat = ({ user, options }: Props) => {
   /** Socket */
   const server = useRef<SocketServer | null>(null);
   const [connected, setConnected] = useState<boolean>(false);
@@ -38,8 +38,6 @@ const Chat = ({ options }: Props) => {
 
   const context = usePersistStore(useContextStore, (state) => state);
   const contextRef = useRef<ContextState | undefined>();
-
-  const userState = usePersistStore(useUserStore, (state) => state);
 
   /** Current State */
   useEffect(() => {
@@ -57,22 +55,14 @@ const Chat = ({ options }: Props) => {
     contextRef.current = context;
   }, [context]);
 
-  /** Current User */
-  useEffect(() => {
-    if (!userState?.user) {
-      fetchUser().then((u) => {
-        userState?.setUser(u.name, u.email, u.image);
-      });
-    }
-  }, [userState, userState?.user]);
 
   /** Send */
   const sendMessage = async () => {
     if (stateRef.current) {
       // get current message
       const turn: Turn = {
-        name: userState?.user?.name || "Seth Juarez",
-        avatar: userState?.user?.image || "undefined",
+        name: user.name || "Seth Juarez",
+        avatar: user.image || "undefined",
         image: stateRef.current.currentImage,
         message: stateRef.current.message,
         status: "done",
@@ -81,8 +71,8 @@ const Chat = ({ options }: Props) => {
 
       // can replace with current user
       stateRef.current.sendMessage(
-        userState?.user?.name || "Seth Juarez",
-        userState?.user?.image || "undefined"
+        user.name || "Seth Juarez",
+        user.image || "undefined"
       );
       // reset image
       setCurrentImage(null);
@@ -135,7 +125,6 @@ const Chat = ({ options }: Props) => {
       server.current.close();
       server.current = null;
     }
-    if(userState) userState.resetUser();
     clearImage();
   };
 

@@ -18,11 +18,21 @@ import { useSound } from "@/audio/useSound";
 import { ContextState, useContextStore } from "@/store/context";
 import usePersistStore from "@/store/usePersistStore";
 import { ChatState, useChatStore } from "@/store/chat";
-import { ActionClient, startSuggestionTask, suggestionRequested } from "@/socket/action";
+import {
+  ActionClient,
+  startSuggestionTask,
+  suggestionRequested,
+} from "@/socket/action";
 import Content from "./content";
+import { useUserStore } from "@/store/user";
+import { fetchUser, User } from "@/data/user";
 
-const Voice = () => {
+type Props = {
+  user: User;
+};
 
+
+const Voice = ({ user }: Props) => {
   const contentRef = useRef<string[]>([]);
 
   const [settings, setSettings] = useState<boolean>(false);
@@ -46,6 +56,7 @@ const Voice = () => {
   const settingsRef = useRef<HTMLDivElement>(null);
   const voiceRef = useRef<VoiceClient | null>(null);
 
+
   const handleServerMessage = async (serverEvent: Message) => {
     const client = new ActionClient(stateRef.current!, contextRef.current!);
     switch (serverEvent.type) {
@@ -64,8 +75,10 @@ const Voice = () => {
               contentRef.current.push(chunk);
               client.streamSuggestion(chunk);
             }
-            if(voiceRef.current) {
-              await voiceRef.current.sendUserMessage("The visual suggestions are ready.");
+            if (voiceRef.current) {
+              await voiceRef.current.sendUserMessage(
+                "The visual suggestions are ready."
+              );
               await voiceRef.current.sendCreateResponse();
             }
           }
@@ -111,6 +124,7 @@ const Voice = () => {
         type: "messages",
         payload: JSON.stringify(client.retrieveMessages()),
       });
+      await voiceRef.current.sendUserMessage(user.name || "Seth");
       await voiceRef.current.sendCreateResponse();
     }
   };

@@ -119,10 +119,14 @@ async def voice_endpoint(websocket: WebSocket):
             chat_items = await websocket.receive_json()
             message = Message(**chat_items)
 
+            # get current username
+            user_message = await websocket.receive_json()
+            user = Message(**user_message)
+
             # create voice system message
             # TODO: retrieve context from chat messages via thread id
             system_message = env.get_template("script.jinja2").render(
-                customer="Seth",
+                customer=user.payload,
                 purchases=purchases,
                 context=json.loads(message.payload),
                 products=products,

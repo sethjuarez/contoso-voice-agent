@@ -1,6 +1,4 @@
 import './globals.css'
-import Footer from '@/components/footer';
-import Header from '@/components/header';
 import type { Metadata } from "next";
 import { version } from '@/store/version';
 import styles from './layout.module.css';
@@ -21,9 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body>
-        <Header />
+        
         {children}
-        <Footer />
+        
         <div className={styles.version}>{version}</div>
       </body>
     </html>

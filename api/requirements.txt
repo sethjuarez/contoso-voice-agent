@@ -1,7 +1,7 @@
 fastapi[standard]
 websockets
 python-dotenv
-prompty[azure,serverless]==0.1.39
+prompty[azure,serverless]==0.1.47
 opentelemetry-instrumentation
 azure-monitor-opentelemetry-exporter
 opentelemetry-instrumentation-fastapi

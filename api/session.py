@@ -1,8 +1,9 @@
 import asyncio
 import json
+from typing import Dict, List, Literal, Union
+from fastapi import WebSocket
 from prompty.tracer import trace
-from typing import Dict, List, Literal
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import WebSocketDisconnect
 from pydantic import BaseModel
 from prompty.tracer import Tracer
 from fastapi.websockets import WebSocketState
@@ -26,26 +27,38 @@ class Message(BaseModel):
 class RealtimeSession:
 
     def __init__(self, realtime: RealtimeVoiceClient, client: WebSocket):
-        self.realtime: RealtimeVoiceClient = realtime
-        self.client: WebSocket = client
+        self.realtime: Union[RealtimeVoiceClient, None] = realtime
+        self.client: Union[WebSocket, None] = client
 
     async def send_message(self, message: Message):
-        await self.client.send_json(message.model_dump())
+        if self.client is not None:
+            await self.client.send_json(message.model_dump())
 
     async def send_audio(self, audio: Message):
         # send audio to client, format into bytes
-        await self.client.send_json(audio.model_dump())
+        if self.client is not None:
+            await self.client.send_json(audio.model_dump())
 
     async def send_console(self, message: Message):
-        await self.client.send_json(message.model_dump())
+        if self.client is not None:
+            await self.client.send_json(message.model_dump())
 
-    async def send_realtime_instructions(self, instructions: str):
-        await self.realtime.send_session_update(instructions)
+    async def send_realtime_instructions(
+        self,
+        instructions: Union[str | None] = None,
+        threshold: float = 0.8,
+        silence_duration_ms: int = 500,
+        prefix_padding_ms: int = 300,
+    ):
+        if self.realtime is not None:
+            await self.realtime.send_session_update(
+                instructions, threshold, silence_duration_ms, prefix_padding_ms
+            )
 
     @trace
     async def receive_realtime(self):
         signature = "api.session.RealtimeSession.receive_realtime"
-        while self.realtime != None and not self.realtime.closed:
+        while self.realtime is not None and not self.realtime.closed:
             async for message in self.realtime.receive_message():
                 # print("received message", message.type)
                 if message is None:
@@ -57,7 +70,9 @@ class RealtimeSession:
                             t(Tracer.SIGNATURE, signature)
                             t(Tracer.INPUTS, message.content)
                             await self.send_console(
-                                Message(type="console", payload=json.dumps(message.content))
+                                Message(
+                                    type="console", payload=json.dumps(message.content)
+                                )
                             )
                     case "conversation.item.input_audio_transcription.completed":
                         with Tracer.start("receive_user_transcript") as t:
@@ -70,9 +85,14 @@ class RealtimeSession:
                                     "content": message.content,
                                 },
                             )
-                            await self.send_message(
-                                Message(type="user", payload=message.content)
-                            )
+                            if (
+                                message.content is not None
+                                and isinstance(message.content, str)
+                                and message.content != ""
+                            ):
+                                await self.send_message(
+                                    Message(type="user", payload=message.content)
+                                )
 
                     case "response.audio_transcript.done":
                         with Tracer.start("receive_assistant_transcript") as t:
@@ -85,15 +105,25 @@ class RealtimeSession:
                                     "content": message.content,
                                 },
                             )
-                            # audio stream
-                            await self.send_message(
-                                Message(type="assistant", payload=message.content)
-                            )
+                            if (
+                                message.content is not None
+                                and isinstance(message.content, str)
+                                and message.content != ""
+                            ):
+                                # audio stream
+                                await self.send_message(
+                                    Message(type="assistant", payload=message.content)
+                                )
 
                     case "response.audio.delta":
-                        await self.send_audio(
-                            Message(type="audio", payload=message.content)
-                        )
+                        if (
+                            message.content is not None
+                            and isinstance(message.content, str)
+                            and message.content != ""
+                        ):
+                            await self.send_audio(
+                                Message(type="audio", payload=message.content)
+                            )
 
                     case "response.failed":
                         with Tracer.start("realtime_failure") as t:
@@ -139,6 +169,8 @@ class RealtimeSession:
     @trace
     async def receive_client(self):
         signature = "api.session.RealtimeSession.receive_client"
+        if self.client is None or self.realtime is None:
+            return
         try:
             while self.client.client_state != WebSocketState.DISCONNECTED:
                 message = await self.client.receive_text()
@@ -170,6 +202,8 @@ class RealtimeSession:
             print("Realtime Socket Disconnected")
 
     async def close(self):
+        if self.client is None or self.realtime is None:
+            return
         try:
             await self.client.close()
             await self.realtime.close()
@@ -182,7 +216,7 @@ class RealtimeSession:
 class ChatSession:
     def __init__(self, client: WebSocket):
         self.client = client
-        self.realtime: RealtimeSession = None
+        self.realtime: Union[RealtimeSession, None] = None
         self.context: List[str] = []
 
     async def send_message(self, message: Message):
@@ -193,16 +227,20 @@ class ChatSession:
 
     def is_closed(self):
         client_closed = (
-            self.client == None
+            self.client is None
             or self.client.client_state == WebSocketState.DISCONNECTED
         )
-        realtime_closed = self.realtime == None or self.realtime.realtime.closed
+        realtime_closed = (
+            self.realtime is None
+            or self.realtime.realtime is None
+            or self.realtime.realtime.closed
+        )
         return client_closed and realtime_closed
 
     @trace
     async def receive_chat(self):
         while (
-            self.client != None
+            self.client is not None
             and self.client.client_state != WebSocketState.DISCONNECTED
         ):
             with Tracer.start("chat_turn") as t:
@@ -214,7 +252,7 @@ class ChatSession:
                     Tracer.INPUTS,
                     {
                         "request": msg.text,
-                        "image": msg.image != None,
+                        "image": msg.image is not None,
                     },
                 )
 
@@ -250,9 +288,10 @@ class ChatSession:
                     },
                 )
 
-
-
     async def start_realtime(self, prompt: str):
+        if self.realtime is None:
+            raise Exception("Realtime session not available")
+
         await self.realtime.send_realtime_instructions(prompt)
         tasks = [
             asyncio.create_task(self.realtime.receive_realtime()),

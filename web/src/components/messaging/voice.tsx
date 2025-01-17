@@ -9,6 +9,7 @@ import {
   FiPhoneOff,
   FiChevronsRight,
   FiChevronsLeft,
+  FiSettings,
 } from "react-icons/fi";
 import { WS_ENDPOINT } from "@/store/endpoint";
 import { Message } from "@/socket/types";
@@ -25,6 +26,10 @@ import {
 } from "@/socket/action";
 import Content from "./content";
 import { useUserStore } from "@/store/user";
+import VoiceSettings from "./voicesettings";
+import { GrClose } from "react-icons/gr";
+import { getSettings } from "@/socket/settings";
+
 
 const Voice = () => {
   const contentRef = useRef<string[]>([]);
@@ -51,7 +56,6 @@ const Voice = () => {
   const voiceRef = useRef<VoiceClient | null>(null);
 
   const user = usePersistStore(useUserStore, (state) => state.user);
-
 
   const handleServerMessage = async (serverEvent: Message) => {
     const client = new ActionClient(stateRef.current!, contextRef.current!);
@@ -120,7 +124,14 @@ const Voice = () => {
         type: "messages",
         payload: JSON.stringify(client.retrieveMessages()),
       });
-      await voiceRef.current.sendUserMessage(user?.name || "Seth");
+
+      const voiceSettings = getSettings();
+      const message = {
+        user: user?.name || "Seth",
+        ...voiceSettings,
+      }
+
+      await voiceRef.current.sendUserMessage(JSON.stringify(message));
       await voiceRef.current.sendCreateResponse();
     }
   };
@@ -212,14 +223,10 @@ const Voice = () => {
           ref={settingsRef}
           onClick={toggleSettings}
         >
-          {settings ? (
-            <FiChevronsLeft size={32} />
-          ) : (
-            <FiChevronsRight size={32} />
-          )}
+          {settings ? <GrClose size={24} /> : <FiSettings size={32} />}
         </div>
-        {settings && <VoiceInput />}
       </div>
+      {settings && <VoiceSettings />}
     </div>
   );
 };

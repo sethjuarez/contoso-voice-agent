@@ -3,6 +3,7 @@ import json
 import logging
 import contextlib
 from pathlib import Path
+from typing import Union
 from prompty.tracer import Tracer, PromptyTracer
 from opentelemetry import trace as oteltrace
 from opentelemetry.sdk.trace import TracerProvider
@@ -15,8 +16,11 @@ _tracer = "prompty"
 
 
 class GenAIOTel:
-    def __init__(self, file_path: str):
-        self.file_path = Path(file_path).resolve().absolute()
+    def __init__(self, file_path: Union[str, Path]):
+        if not isinstance(file_path, Path):
+            self.file_path = Path(file_path).resolve().absolute()
+        else:
+            self.file_path = file_path.resolve().absolute()
         self.writeable_types = (bool, str, bytes, int, float)
 
         if not self.file_path.exists():
@@ -80,12 +84,12 @@ def init_tracing(local_tracing: bool = True):
         # Add the Azure exporter to the tracer provider
         resource = Resource(attributes={SERVICE_NAME: "contoso-voice-api"})
 
-        oteltrace.set_tracer_provider(TracerProvider(resource=resource))
-
-        oteltrace.get_tracer_provider().add_span_processor(
+        provider = TracerProvider(resource=resource)
+        provider.add_span_processor(
             BatchSpanProcessor(
                 AzureMonitorTraceExporter(connection_string=app_insights)
             )
         )
 
+        oteltrace.set_tracer_provider(provider)
         return oteltrace.get_tracer(_tracer)

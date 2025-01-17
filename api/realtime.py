@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-import json
-from typing import Any, AsyncGenerator
-from rtclient import (
+from typing import Any, AsyncGenerator, Union
+from prompty.tracer import trace
+
+from rtclient import (  # type: ignore
     InputAudioBufferAppendMessage,
     InputAudioBufferClearMessage,
     InputAudioTranscription,
@@ -14,8 +15,7 @@ from rtclient import (
     SessionUpdateParams,
     SystemMessageItem,
     UserMessageItem,
-)
-from prompty.tracer import trace, Tracer
+) 
 
 # things to have in here
 # - send user message
@@ -125,16 +125,22 @@ class RealtimeVoiceClient:
         )
 
     @trace
-    async def send_session_update(self, instructions: str = None):
+    async def send_session_update(
+        self,
+        instructions: Union[str | None] = None,
+        threshold: float = 0.8,
+        silence_duration_ms: int = 500,
+        prefix_padding_ms: int = 300,
+    ):
         if self.client is None:
             raise Exception("Client not set")
 
         session = SessionUpdateParams(
             turn_detection=ServerVAD(
                 type="server_vad",
-                threshold=0.8,
-                silence_duration_ms=500,
-                prefix_padding_ms=300,
+                threshold=threshold,
+                silence_duration_ms=silence_duration_ms,
+                prefix_padding_ms=prefix_padding_ms,
             ),
             input_audio_transcription=InputAudioTranscription(model="whisper-1"),
             voice="shimmer",

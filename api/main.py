@@ -5,17 +5,15 @@ from pathlib import Path
 from typing import List
 from fastapi.responses import StreamingResponse
 from jinja2 import Environment, FileSystemLoader
-from rtclient import RTLowLevelClient
-from api import repeat
+
+from rtclient import RTLowLevelClient  # type: ignore
 from api.realtime import RealtimeVoiceClient
 from api.session import Message, RealtimeSession, SessionManager
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from azure.core.credentials import AzureKeyCredential
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from api.session import SessionManager
 from api.suggestions import SimpleMessage, create_suggestion, suggestion_requested
-from prompty.tracer import Tracer, trace
 from dotenv import load_dotenv
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
@@ -24,7 +22,7 @@ from api.telemetry import init_tracing
 load_dotenv()
 
 AZURE_VOICE_ENDPOINT = os.getenv("AZURE_VOICE_ENDPOINT")
-AZURE_VOICE_KEY = os.getenv("AZURE_VOICE_KEY")
+AZURE_VOICE_KEY = os.getenv("AZURE_VOICE_KEY", "fake_key")
 
 LOCAL_TRACING_ENABLED = os.getenv("LOCAL_TRACING_ENABLED", "true") == "true"
 init_tracing(local_tracing=LOCAL_TRACING_ENABLED)
@@ -120,20 +118,34 @@ async def voice_endpoint(websocket: WebSocket):
             message = Message(**chat_items)
 
             # get current username
+            # and receive any parameters
             user_message = await websocket.receive_json()
             user = Message(**user_message)
+
+            settings = json.loads(user.payload)
+            print(
+                "Starting voice session with settings:\n",
+                json.dumps(settings, indent=2),
+            )
 
             # create voice system message
             # TODO: retrieve context from chat messages via thread id
             system_message = env.get_template("script.jinja2").render(
-                customer=user.payload,
+                customer=settings["user"] if "user" in settings else "Seth",
                 purchases=purchases,
                 context=json.loads(message.payload),
                 products=products,
             )
 
             session = RealtimeSession(RealtimeVoiceClient(rt, verbose=False), websocket)
-            await session.send_realtime_instructions(system_message)
+            await session.send_realtime_instructions(
+                system_message,
+                threshold=settings["threshold"] if "threshold" in settings else 0.8,
+                silence_duration_ms=(
+                    settings["silence"] if "silence" in settings else 500
+                ),
+                prefix_padding_ms=(settings["prefix"] if "prefix" in settings else 300),
+            )
             tasks = [
                 asyncio.create_task(session.receive_realtime()),
                 asyncio.create_task(session.receive_client()),
@@ -142,12 +154,6 @@ async def voice_endpoint(websocket: WebSocket):
 
     except WebSocketDisconnect as e:
         print("Voice Socket Disconnected", e)
-
-
-@repeat(seconds=60)
-@trace
-async def cleanup_sessions():
-    await SessionManager.clear_closed_sessions()
 
 
 FastAPIInstrumentor.instrument_app(app, exclude_spans=["send", "receive"])

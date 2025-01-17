@@ -11,7 +11,6 @@ import {
 } from "react-icons/fi";
 import { WS_ENDPOINT } from "@/store/endpoint";
 import { Message } from "@/socket/types";
-import VoiceInput from "./voiceinput";
 import VoiceClient from "@/socket/voice-client";
 import { useSound } from "@/audio/useSound";
 import { ContextState, useContextStore } from "@/store/context";

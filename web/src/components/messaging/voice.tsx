@@ -7,8 +7,6 @@ import {
   FiPhone,
   FiPhoneCall,
   FiPhoneOff,
-  FiChevronsRight,
-  FiChevronsLeft,
   FiSettings,
 } from "react-icons/fi";
 import { WS_ENDPOINT } from "@/store/endpoint";

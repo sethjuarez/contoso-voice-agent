@@ -1,3 +1,11 @@
 {
-  "prompty.currentModelConfiguration": "contoso-enterprises"
+  "prompty.currentModelConfiguration": "contoso-enterprises",
+  "python.testing.pytestArgs": [
+    "api"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "mypy-type-checker.args": [
+    "--check-untyped-defs"
+  ],
 }

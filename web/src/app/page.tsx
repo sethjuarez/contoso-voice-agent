@@ -12,7 +12,7 @@ const Home = async () => {
 
   return (
     <>
-      <Header categories={categories} />
+      <Header />
       <Block outerClassName={styles.heroContent}>
         <div className={styles.heroTitle}>Embrace Adventure</div>
         <div className={styles.heroText}>

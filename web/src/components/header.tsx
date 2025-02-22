@@ -2,7 +2,6 @@
 import Block from "./block";
 import Image from "next/image";
 import styles from "./header.module.css";
-import { Category } from "@/store/products";
 import { useUserStore } from "@/store/user";
 import { BiSolidUserCircle } from "react-icons/bi";
 import Link from "next/link";
@@ -10,12 +9,7 @@ import usePersistStore from "@/store/usePersistStore";
 import { useEffect } from "react";
 import { fetchUser } from "@/data/user";
 
-type Props = {
-  categories: Category[];
-};
-
-const Header = ({ categories }: Props) => {
-  //const categories = getCategories();
+const Header = () => {
 
   const userState = usePersistStore(useUserStore, (state) => state);
   const user = usePersistStore(useUserStore, (state) => state.user);

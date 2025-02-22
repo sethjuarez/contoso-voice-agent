@@ -1,5 +1,6 @@
 "use client";
 import Block from "./block";
+import Image from "next/image";
 import styles from "./header.module.css";
 import { Category } from "@/store/products";
 import { GiHamburgerMenu } from "react-icons/gi";
@@ -46,20 +47,14 @@ const Header = ({ categories }: Props) => {
     <Block innerClassName={styles.innerBlock}>
       <div className={styles.baricon}>
         <Link title="home" href="/">
-          <GiHamburgerMenu size={22} className={styles.username} />
+          <Image
+            src={"/images/full-logo.png"}
+            alt="logo"
+            height={38}
+            width={274}
+            className={styles.username}
+          />
         </Link>
-      </div>
-      <div className={styles.categories}>
-        {categories.map((category) => (
-          <Link href={"#"} key={category.slug} className={styles.category}>
-            {category.name}
-          </Link>
-        ))}
-        {routes.map((route) => (
-          <Link href={route.href} key={route.id} className={styles.category}>
-            {route.title}
-          </Link>
-        ))}
       </div>
       <div className={styles.grow} />
       <div className={styles.user}>

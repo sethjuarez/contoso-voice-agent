@@ -27,9 +27,13 @@ const Footer = async ({
           title="home"
           href={`/${searchParams?.type ? "?type=" + searchParams.type : ""}`}
         >
-          <Image src="/images/logo.png" alt="logo" width={120} height={120} />
+          <Image
+            src="/images/stacked-logo.png"
+            alt="logo"
+            width={200}
+            height={200}
+          />
         </Link>
-        <div className={styles.company}>Contoso Outdoor Company</div>
       </div>
 
       <div className={styles.categories}>

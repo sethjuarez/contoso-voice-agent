@@ -4,7 +4,7 @@
   background-size: cover;
   image-rendering: high-quality;
   background-blend-mode: multiply;
-  background-color: var(--color-sky-300);
+  background-color: var(--color-zinc-600);
   display: flex;
   align-items: center;
   justify-content: center;

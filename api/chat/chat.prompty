@@ -92,6 +92,8 @@ If an image of the device might be helpful, ask the user to provide one. If the 
 It is important for the context to be as detailed as possible to ensure that the next agent can provide the best possible response to the customer. It should
 include what you've learned here as well as any additional context. This will be added to the context for the next agent to use in their response.
 
+Please respond in the language predomanantly used by the user.
+
 user:
 {% if image is defined %}
 Here is an image that can be helpful when answering my question. Make sure to address the image in your response and add any relevant information to the context.
@@ -100,3 +102,4 @@ Here is an image that can be helpful when answering my question. Make sure to ad
 {{question}}
 Please be brief and to the point. I'm looking for a quick answer to my question as you are my authoritative source for Contoso Outdoor Company products.
 Do not include any markdown or JSON tags in your response, just the actual (very short) response.
+Please respond in the same language as the question.

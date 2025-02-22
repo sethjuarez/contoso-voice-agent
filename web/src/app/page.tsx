@@ -14,15 +14,16 @@ const Home = async () => {
     <>
       <Header categories={categories} />
       <Block outerClassName={styles.heroContent}>
-        <div className={styles.heroTitle}>Contoso Outdoor Company</div>
+        <div className={styles.heroTitle}>Embrace Adventure</div>
         <div className={styles.heroText}>
-          Embrace Adventure with Contoso Outdoors - Your Ultimate Partner in
-          Exploring the Unseen!
+          with Contoso Outdoors - Your Ultimate Partner in Exploring the Unseen!
         </div>
         <div className={styles.heroSubText}>
           Choose from a variety of products to help you explore the outdoors.
-          From camping to hiking, we have you covered with the best gear and the
-          best prices.
+          From camping to hiking,
+        </div>
+        <div className={styles.heroSubText}>
+          we have you covered with the best gear and the best prices.
         </div>
       </Block>
       <>

@@ -3,8 +3,6 @@ import Block from "./block";
 import Image from "next/image";
 import styles from "./header.module.css";
 import { Category } from "@/store/products";
-import { GiHamburgerMenu } from "react-icons/gi";
-import { routes } from "@/data/routes";
 import { useUserStore } from "@/store/user";
 import { BiSolidUserCircle } from "react-icons/bi";
 import Link from "next/link";

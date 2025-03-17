@@ -33,6 +33,9 @@ Here is the voice chat transcript:
 
 {% endfor %}
 
+Make sure to write the marketing description in the language that is used most in the conversation above. 
+This is a critical part of the task. The description should be engaging and fun, as if it were written for a blog post.
+
 # Reference products
 Use the following products as the source for the marketing description but only use the products that fit the
 customers needs and are mentioned by the agent or customer in the transcript

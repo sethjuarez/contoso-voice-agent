@@ -14,19 +14,22 @@ class SimpleMessage(BaseModel):
     text: str
 
 @trace
-async def create_suggestion(messages: List[SimpleMessage]):
+async def create_suggestion(customer: str, messages: List[SimpleMessage]):
+    inputs = {
+        "customer": customer,
+        "context": [
+            {
+                "name": message.name,
+                "text": message.text,
+            }
+            for message in messages
+        ],
+    }
+
     result = await prompty.execute_async(
         suggestions_prompty,
         parameters={"stream": True},
-        inputs={
-            "context": [
-                {
-                    "name": message.name,
-                    "text": message.text,
-                }
-                for message in messages
-            ],
-        },
+        inputs=inputs,
     )
 
     async for item in result:

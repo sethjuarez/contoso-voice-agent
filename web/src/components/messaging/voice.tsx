@@ -67,7 +67,7 @@ const Voice = () => {
           if (response && response.requested) {
             setSuggestions(true);
             suggestionsRef.current = true;
-            const task = await startSuggestionTask(messages);
+            const task = await startSuggestionTask(user?.name || "Seth", messages);
             for await (const chunk of task) {
               contentRef.current.push(chunk);
               client.streamSuggestion(chunk);

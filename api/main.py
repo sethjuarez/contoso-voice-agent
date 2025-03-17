@@ -6,6 +6,7 @@ from typing import List
 from fastapi.responses import StreamingResponse
 from jinja2 import Environment, FileSystemLoader
 
+from pydantic import BaseModel
 from rtclient import RTLowLevelClient  # type: ignore
 from api.realtime import RealtimeVoiceClient
 from api.session import Message, RealtimeSession, SessionManager
@@ -66,10 +67,15 @@ async def root():
     return {"message": "Hello World"}
 
 
+class SuggestionPostRequest(BaseModel):
+    customer: str
+    messages: List[SimpleMessage]
+
+
 @app.post("/api/suggestion")
-async def suggestion(messages: List[SimpleMessage]):
+async def suggestion(suggestion: SuggestionPostRequest):
     return StreamingResponse(
-        create_suggestion(messages),
+        create_suggestion(suggestion.customer, suggestion.messages),
         media_type="text/event-stream",
     )
 

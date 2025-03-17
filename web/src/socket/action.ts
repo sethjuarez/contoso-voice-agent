@@ -26,10 +26,14 @@ export const suggestionRequested = async (messages: SimpleMessage[]) => {
 };
 
 export const startSuggestionTask = async (
-  messages: SimpleMessage[]
+  customer: string, messages: SimpleMessage[]
 ): Promise<{
   [Symbol.asyncIterator](): AsyncGenerator<string, void, unknown>;
 }> => {
+  const body = {
+    customer: customer,
+    messages: messages,
+  }
   console.log("startSuggestionTask", messages);
   const configuration = {
     method: "POST",
@@ -37,7 +41,7 @@ export const startSuggestionTask = async (
       "Content-Type": "application/json",
       Connection: "keep-alive",
     },
-    body: JSON.stringify(messages),
+    body: JSON.stringify(body),
   };
 
   const endpoint = API_ENDPOINT.endsWith("/")

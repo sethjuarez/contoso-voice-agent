@@ -83,7 +83,8 @@ const Voice = () => {
         break;
       case "user":
         console.log("user:", serverEvent.payload);
-        client.sendVoiceUserMessage(serverEvent.payload);
+        // TODO: changed to use new user
+        client.sendVoiceUserMessage(serverEvent.payload, user);
 
         break;
       case "console":

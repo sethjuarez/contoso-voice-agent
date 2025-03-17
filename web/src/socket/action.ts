@@ -3,6 +3,7 @@ import { ContextState } from "@/store/context";
 import { Action, Assistant, Context, SocketMessage } from "@/store/socket";
 import { SimpleMessage } from "./types";
 import { API_ENDPOINT } from "@/store/endpoint";
+import { User } from "@/store/user";
 
 
 export const suggestionRequested = async (messages: SimpleMessage[]) => {
@@ -76,10 +77,10 @@ export class ActionClient {
     this.context = context;
   }
 
-  sendVoiceUserMessage(message: string) {
+  sendVoiceUserMessage(message: string, user?: User) {
     const turn: Turn = {
-      name: "Seth Juarez",
-      avatar: "/people/sethjuarez.jpg",
+      name: user ? user.name : "Seth Juarez",
+      avatar: user ? (user.image ? user.image : "/people/sethjuarez.jpg") : "/people/sethjuarez.jpg",
       image: null,
       message: message,
       status: "voice",

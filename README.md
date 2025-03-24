@@ -14,6 +14,9 @@ A real-time voice and text configuration system that enables interactive communi
   - WebSocket client implementation
   - User interface components
   - State management
+- `/docs` - Documentation
+  - [System Architecture](docs/architecture.md)
+  - [Sequence Diagrams](docs/sequence-diagrams.md)
 
 ## Setup
 
@@ -85,4 +88,15 @@ Message types:
  [User Interface]          [Message Routing]
 ```
 
-The system uses a real-time client for voice processing, with configurable parameters for voice activity detection and audio processing.
+See [System Architecture](docs/architecture.md) and [Sequence Diagrams](docs/sequence-diagrams.md) for detailed documentation.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
+
+## License
+
+This project is proprietary and confidential. All rights reserved.

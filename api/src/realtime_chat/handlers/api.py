@@ -1,3 +1,5 @@
+"""API handlers and application setup."""
+
 import json
 import os
 import asyncio
@@ -8,32 +10,38 @@ from jinja2 import Environment, FileSystemLoader
 
 from pydantic import BaseModel
 from rtclient import RTLowLevelClient  # type: ignore
-from realtime_chat.realtime import RealtimeVoiceClient
-from realtime_chat.session import Message, RealtimeSession, SessionManager
+from realtime_chat.core.voice import RealtimeVoiceClient
+from realtime_chat.core.session import Message, RealtimeSession, SessionManager
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from azure.core.credentials import AzureKeyCredential
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from realtime_chat.suggestions import SimpleMessage, create_suggestion, suggestion_requested
 from dotenv import load_dotenv
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-
-from realtime_chat.telemetry import init_tracing
 
 load_dotenv()
 
+# Configuration
 AZURE_VOICE_ENDPOINT = os.getenv("AZURE_VOICE_ENDPOINT")
 AZURE_VOICE_KEY = os.getenv("AZURE_VOICE_KEY", "fake_key")
-
 LOCAL_TRACING_ENABLED = os.getenv("LOCAL_TRACING_ENABLED", "true") == "true"
-init_tracing(local_tracing=LOCAL_TRACING_ENABLED)
 
-base_path = Path(__file__).parent
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    from realtime_chat.core.telemetry import init_tracing
+    DO_TRACING = True
+except ImportError:
+    DO_TRACING = False
+    def init_tracing(*args, **kwargs): pass
 
-# Load products and purchases
-# NOTE: This would generally be accomplished by querying a database
-products = json.loads((base_path / "products.json").read_text())
-purchases = json.loads((base_path / "purchases.json").read_text())
+if DO_TRACING:
+    init_tracing(local_tracing=LOCAL_TRACING_ENABLED)
+
+# Load static data
+_base_path = Path(__file__).parent.parent
+PROMPT_TEXT = (_base_path / "config" / "prompt.txt").read_text()
+PRODUCTS = json.loads((_base_path / "config" / "products.json").read_text())
+PURCHASES = json.loads((_base_path / "config" / "purchases.json").read_text())
 
 # jinja2 template environment
 env = Environment(loader=FileSystemLoader(base_path / "call"))
@@ -162,4 +170,5 @@ async def voice_endpoint(websocket: WebSocket):
         print("Voice Socket Disconnected", e)
 
 
-FastAPIInstrumentor.instrument_app(app, exclude_spans=["send", "receive"])
+if DO_TRACING:
+    FastAPIInstrumentor.instrument_app(app, exclude_spans=["send", "receive"])

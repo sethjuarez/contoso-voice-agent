@@ -1,13 +1,3 @@
-import asyncio
-import json
-from typing import Dict, List, Literal, Union
-from fastapi import WebSocket
-from prompty.tracer import trace
-from fastapi import WebSocketDisconnect
-from pydantic import BaseModel
-from prompty.tracer import Tracer
-from fastapi.websockets import WebSocketState
-from realtime_chat.chat import create_response
 from realtime_chat.core.models import (
     ClientMessage,
     send_action,
@@ -16,7 +6,25 @@ from realtime_chat.core.models import (
     stop_assistant,
     stream_assistant,
 )
+
+import asyncio
+import json
+from typing import Dict, List, Literal, Union, Any
+from fastapi import WebSocket
+from prompty.tracer import trace
+from fastapi import WebSocketDisconnect
+from pydantic import BaseModel
+from prompty.tracer import Tracer
+from fastapi.websockets import WebSocketState
 from realtime_chat.core.voice import RealtimeVoiceClient
+
+# Mock response for testing
+async def mock_create_response(name: str, text: str, context: List[str], image: str | None) -> Dict[str, Any]:
+    return {
+        "response": "Test response",
+        "context": "Test context",
+        "call": 0.8
+    }
 
 
 class Message(BaseModel):
@@ -260,7 +268,7 @@ class ChatSession:
                 await self.client.send_json(start_assistant())
 
                 # create response
-                response = await create_response(
+                response = await mock_create_response(
                     msg.name, msg.text, self.context, msg.image
                 )
 

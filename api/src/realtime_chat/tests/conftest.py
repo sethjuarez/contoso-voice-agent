@@ -15,7 +15,13 @@ def setup_test_env():
         'AZURE_VOICE_ENDPOINT': 'https://test.voice.azure.com/',
         'AZURE_VOICE_KEY': 'test-voice-key',
         'LOCAL_TRACING_ENABLED': 'false'
-    }):
+    }), \
+    patch('realtime_chat.chat.create_response') as mock_create_response:
+        mock_create_response.return_value = {
+            "response": "Test response",
+            "context": "Test context",
+            "call": 0.8
+        }
         yield
 
 @pytest.fixture

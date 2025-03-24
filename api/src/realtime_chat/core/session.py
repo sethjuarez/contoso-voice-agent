@@ -7,16 +7,16 @@ from fastapi import WebSocketDisconnect
 from pydantic import BaseModel
 from prompty.tracer import Tracer
 from fastapi.websockets import WebSocketState
-from api.chat import create_response
-from api.models import (
+from realtime_chat.chat import create_response
+from realtime_chat.core.models import (
     ClientMessage,
     send_action,
-    send_context,
+    send_context, 
     start_assistant,
     stop_assistant,
     stream_assistant,
 )
-from api.realtime import RealtimeVoiceClient
+from realtime_chat.core.voice import RealtimeVoiceClient
 
 
 class Message(BaseModel):

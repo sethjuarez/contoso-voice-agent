@@ -1,9 +1,11 @@
 import json
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi import WebSocket, WebSocketState
+from fastapi import WebSocket
+from fastapi.websockets import WebSocketState
 
-from realtime_chat.session import ChatSession, SessionManager, Message, ClientMessage
+from realtime_chat.core.session import ChatSession, SessionManager, Message
+from realtime_chat.core.models import ClientMessage
 
 @pytest.fixture
 def websocket_mock():

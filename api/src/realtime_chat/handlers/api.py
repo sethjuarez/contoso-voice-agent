@@ -8,17 +8,17 @@ from jinja2 import Environment, FileSystemLoader
 
 from pydantic import BaseModel
 from rtclient import RTLowLevelClient  # type: ignore
-from api.realtime import RealtimeVoiceClient
-from api.session import Message, RealtimeSession, SessionManager
+from realtime_chat.realtime import RealtimeVoiceClient
+from realtime_chat.session import Message, RealtimeSession, SessionManager
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from azure.core.credentials import AzureKeyCredential
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from api.suggestions import SimpleMessage, create_suggestion, suggestion_requested
+from realtime_chat.suggestions import SimpleMessage, create_suggestion, suggestion_requested
 from dotenv import load_dotenv
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-from api.telemetry import init_tracing
+from realtime_chat.telemetry import init_tracing
 
 load_dotenv()
 

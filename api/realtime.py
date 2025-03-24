@@ -1,3 +1,14 @@
+"""
+Real-time Voice Communication Module
+
+This module implements real-time voice communication functionality using Azure's
+real-time voice services. It handles:
+- Audio stream management
+- Voice activity detection (VAD)
+- Message processing and routing
+- Real-time transcription and response generation
+"""
+
 from dataclasses import dataclass
 from typing import Any, AsyncGenerator, Union
 from prompty.tracer import trace
@@ -17,38 +28,64 @@ from rtclient import (  # type: ignore
     UserMessageItem,
 ) 
 
-# things to have in here
-# - send user message
-# - send audio message
-# - send system message
-# - loop
-# - eventing for current state
-
 
 @dataclass
 class RealTimeItem:
+    """
+    Represents a real-time communication item.
+    
+    Attributes:
+        type: Type of the item (e.g., 'audio', 'text', 'response')
+        content: Optional content payload
+    """
     type: str
     content: Any | None = None
 
 
 class RealtimeVoiceClient:
+    """
+    Handles real-time voice communication with Azure services.
+    
+    This class manages the bidirectional voice communication stream, including:
+    - Audio input/output
+    - Message processing
+    - Voice activity detection
+    - Transcription handling
+    - Response generation
+    
+    Attributes:
+        client: The low-level RT client for Azure communication
+        verbose: Whether to enable detailed logging
+    """
 
     def __init__(self, client: RTLowLevelClient = None, verbose: bool = False):
         self.client: RTLowLevelClient = client
         self.verbose: bool = verbose
 
     def set_client(self, client: RTLowLevelClient):
+        """Set the RT client instance for this voice client."""
         self.client = client
 
     @property
     def closed(self):
+        """Check if the client connection is closed."""
         return self.client is None or self.client.closed
 
     async def close(self):
+        """Close the client connection gracefully."""
         if self.client is not None:
             await self.client.close()
 
     async def send_user_message(self, message: str):
+        """
+        Send a user text message to the voice service.
+        
+        Args:
+            message: The text message to send
+            
+        Raises:
+            Exception: If client is not initialized or message is empty
+        """
         if self.client is None:
             raise Exception("Client not set")
 
@@ -71,6 +108,18 @@ class RealtimeVoiceClient:
 
     @trace
     async def send_user_message_with_response(self, message: str):
+        """
+        Send a user message and request an immediate response.
+        
+        This method sends a user message and configures the system to generate
+        a response right away, unlike send_user_message which only sends the message.
+        
+        Args:
+            message: The text message to send
+            
+        Raises:
+            Exception: If client is not initialized or message is empty
+        """
         if self.client is None:
             raise Exception("Client not set")
 
@@ -98,12 +147,29 @@ class RealtimeVoiceClient:
         await self.client.send(ResponseCreateMessage(response=response))
 
     async def trigger_response(self):
+        """
+        Trigger the generation of a response without sending new input.
+        
+        Raises:
+            Exception: If client is not initialized
+        """
         if self.client is None:
             raise Exception("Client not set")
         await self.client.send(ResponseCreateMessage())
 
     @trace
     async def send_system_message(self, message: str):
+        """
+        Send a system message to configure or control the voice service.
+        
+        System messages provide context and configuration rather than user input.
+        
+        Args:
+            message: The system message text
+            
+        Raises:
+            Exception: If client is not initialized or message is empty
+        """
         if self.client is None:
             raise Exception("Client not set")
 
@@ -132,6 +198,17 @@ class RealtimeVoiceClient:
         silence_duration_ms: int = 500,
         prefix_padding_ms: int = 300,
     ):
+        """
+        Update the voice session configuration.
+        
+        Args:
+            instructions: Optional system instructions for the session
+            threshold: Voice activity detection threshold (0.0-1.0)
+            silence_duration_ms: Duration of silence to detect end of speech
+            prefix_padding_ms: Audio padding before speech detection
+            
+        Raises:
+            Exception: If client is not initialized
         if self.client is None:
             raise Exception("Client not set")
 

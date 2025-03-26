@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-this-alias */
 
+/**
+ * Internal helper to send a message through a WebSocket.
+ * @param socket - The WebSocket instance to send through
+ * @param message - The message payload to send
+ * @returns Promise that resolves when sent, rejects if socket not open
+ */
 function sendMessage(
-  socket: WebSocket,
+  socket: WebSocket, 
   message: string | ArrayBufferLike | ArrayBufferView
 ): Promise<void> {
   if (socket.readyState !== WebSocket.OPEN) {
@@ -12,9 +18,28 @@ function sendMessage(
   return Promise.resolve();
 }
 
+/** Function type for resolving an iterator result */
 type ResolveFn<T> = (value: IteratorResult<T>) => void;
+/** Function type for rejecting with an error */
 type RejectFn<E> = (reason: E) => void;
 
+/**
+ * Client for handling bidirectional WebSocket communication with automatic message queueing.
+ * Implements AsyncIterable to allow for async iteration over received messages.
+ * 
+ * @typeParam U - Type of messages sent to the server
+ * @typeParam D - Type of messages received from the server
+ * 
+ * @example
+ * ```typescript
+ * const client = new WebSocketClient<RequestMsg, ResponseMsg>("ws://server");
+ * await client.send({type: "request"}); // Send message
+ * 
+ * for await (const msg of client) {
+ *   console.log("Received:", msg); // Handle responses
+ * }
+ * ```
+ */
 export class WebSocketClient<U, D> implements AsyncIterable<D> {
   private socket: WebSocket;
   private connectedPromise: Promise<void>;
@@ -101,6 +126,14 @@ export class WebSocketClient<U, D> implements AsyncIterable<D> {
     };
   }
 
+  /**
+   * Sends a message to the WebSocket server.
+   * Waits for the connection to be established first.
+   * 
+   * @param message - The message to send to the server
+   * @throws Error if there was a connection error or the socket is closed
+   * @returns Promise that resolves when the message is sent
+   */
   async send(message: U): Promise<void> {
     await this.connectedPromise;
     if (this.error) {
@@ -110,6 +143,11 @@ export class WebSocketClient<U, D> implements AsyncIterable<D> {
     return sendMessage(this.socket, serialized);
   }
 
+  /**
+   * Closes the WebSocket connection if open.
+   * Waits for pending operations to complete.
+   * @returns Promise that resolves when the connection is fully closed
+   */
   async close(): Promise<void> {
     await this.connectedPromise;
     if (this.done) {

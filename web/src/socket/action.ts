@@ -5,7 +5,11 @@ import { SimpleMessage } from "./types";
 import { API_ENDPOINT } from "@/store/endpoint";
 import { User } from "@/store/user";
 
-
+/**
+ * Request suggestions from the server based on a set of messages.
+ * @param messages - The messages to base suggestions on
+ * @returns Promise with the suggestion response
+ */
 export const suggestionRequested = async (messages: SimpleMessage[]) => {
   const configuration = {
     method: "POST",
@@ -72,15 +76,34 @@ export const startSuggestionTask = async (
   };
 };
 
+/**
+ * Client for handling application-specific messaging and state management.
+ * Coordinates chat and context state updates based on messages and actions.
+ */
 export class ActionClient {
+  /** Name of the AI assistant in the chat interface */
   assistantName: string = "Wiry";
+  /** Chat state management instance */
   state: ChatState;
+  /** Context state management instance */
   context: ContextState;
+
+  /**
+   * Creates a new ActionClient instance.
+   * @param state - The chat state manager
+   * @param context - The context state manager
+   */
   constructor(state: ChatState, context: ContextState) {
     this.state = state;
     this.context = context;
   }
 
+  /**
+   * Sends a voice message as a user, updating chat state.
+   * @param message - The message content
+   * @param user - Optional user info for the message
+   * @returns Array of updated messages including this one
+   */
   sendVoiceUserMessage(message: string, user?: User) {
     const turn: Turn = {
       name: user ? user.name : "Seth Juarez",

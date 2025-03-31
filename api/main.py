@@ -1,3 +1,18 @@
+"""
+Voice + Text Configurator API
+
+This module implements a FastAPI server that provides both RESTful and WebSocket endpoints
+for real-time voice and text communication. The server integrates with Azure Voice Services
+for speech-to-text and text-to-speech capabilities.
+
+Key components:
+- REST endpoints for suggestions and requests
+- WebSocket endpoints for chat and voice communication
+- Session management for persistent connections
+- Integration with Azure Voice Services
+- Telemetry and tracing support
+"""
+
 import json
 import os
 import asyncio
@@ -64,16 +79,30 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
+    """Health check endpoint."""
     return {"message": "Hello World"}
 
 
 class SuggestionPostRequest(BaseModel):
+    """
+    Request model for the suggestion endpoint.
+    
+    Attributes:
+        customer: Customer identifier
+        messages: List of previous chat messages for context
+    """
     customer: str
     messages: List[SimpleMessage]
 
 
 @app.post("/api/suggestion")
 async def suggestion(suggestion: SuggestionPostRequest):
+    """
+    Generate AI suggestions based on chat history.
+    
+    Returns a streaming response containing AI-generated suggestions
+    based on the customer context and previous messages.
+    """
     return StreamingResponse(
         create_suggestion(suggestion.customer, suggestion.messages),
         media_type="text/event-stream",
@@ -82,6 +111,12 @@ async def suggestion(suggestion: SuggestionPostRequest):
 
 @app.post("/api/request")
 async def request(messages: List[SimpleMessage]):
+    """
+    Check if a suggestion should be requested based on message context.
+    
+    Returns:
+        dict: Contains 'requested' boolean indicating if a suggestion is needed
+    """
     requested = await suggestion_requested(messages)
     return {
         "requested": requested,
@@ -90,6 +125,14 @@ async def request(messages: List[SimpleMessage]):
 
 @app.websocket("/api/chat")
 async def chat_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for text chat communication.
+    
+    Handles:
+    - Session creation/retrieval based on thread ID
+    - Persistent WebSocket connections
+    - Message routing within sessions
+    """
     await websocket.accept()
     try:
         # first message should be thread id
@@ -111,6 +154,26 @@ async def chat_endpoint(websocket: WebSocket):
 
 @app.websocket("/api/voice")
 async def voice_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time voice communication.
+    
+    Handles:
+    - Voice session initialization with Azure Voice Services
+    - Real-time audio streaming
+    - Voice activity detection
+    - Context-aware responses based on chat history
+    - Audio processing configuration (threshold, silence duration, etc.)
+    
+    Flow:
+    1. Accept WebSocket connection
+    2. Initialize Azure voice client
+    3. Receive initial chat context
+    4. Receive user settings
+    5. Configure voice session
+    6. Start concurrent tasks for:
+       - Real-time audio processing
+       - Client message handling
+    """
     await websocket.accept()
     try:
         async with RTLowLevelClient(
@@ -123,8 +186,7 @@ async def voice_endpoint(websocket: WebSocket):
             chat_items = await websocket.receive_json()
             message = Message(**chat_items)
 
-            # get current username
-            # and receive any parameters
+            # get current username and parameters
             user_message = await websocket.receive_json()
             user = Message(**user_message)
 
@@ -134,8 +196,7 @@ async def voice_endpoint(websocket: WebSocket):
                 json.dumps(settings, indent=2),
             )
 
-            # create voice system message
-            # TODO: retrieve context from chat messages via thread id
+            # Configure voice system with chat context
             system_message = env.get_template("script.jinja2").render(
                 customer=settings["user"] if "user" in settings else "Seth",
                 purchases=purchases,
@@ -152,6 +213,8 @@ async def voice_endpoint(websocket: WebSocket):
                 ),
                 prefix_padding_ms=(settings["prefix"] if "prefix" in settings else 300),
             )
+            
+            # Run audio processing and client message handling concurrently
             tasks = [
                 asyncio.create_task(session.receive_realtime()),
                 asyncio.create_task(session.receive_client()),

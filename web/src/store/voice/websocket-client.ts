@@ -107,7 +107,10 @@ export class WebSocketClient<U, D> implements AsyncIterable<D> {
       throw this.error;
     }
     const serialized = JSON.stringify(message);
-    return sendMessage(this.socket, serialized);
+    if (this.socket.readyState !== WebSocket.OPEN)
+      return Promise.reject(new Error("Socket is not open"));
+    else
+      return sendMessage(this.socket, serialized);
   }
 
   async close(): Promise<void> {

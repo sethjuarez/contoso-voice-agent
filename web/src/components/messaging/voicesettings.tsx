@@ -1,31 +1,46 @@
-import { useEffect, useState } from "react";
-import VoiceInput from "./voiceinput";
-import styles from "./voicesettings.module.css";
-import { getSettings, Settings } from "@/socket/settings";
+import { useLocalStorage } from "@/store/uselocalstorage";
+import { useMediaDevices } from "@/store/usemediadevice";
 import { GrPowerReset } from "react-icons/gr";
+import styles from "./voicesettings.module.css";
+import { defaultConfiguration, type VoiceConfiguration } from "@/store/voice";
 
 const VoiceSettings = () => {
-  const [settings, setSettings] = useState<Settings>({
-    threshold: 0.8,
-    silence: 500,
-    prefix: 300,
-  });
-
-  useEffect(() => {
-    const settings = getSettings();
-    setSettings(settings);
-  }, []);
-
-  const saveSettings = (settings: Settings) => {
-    setSettings(settings);
-    localStorage.setItem("voice-settings", JSON.stringify(settings));
-  };
+  const {
+    storedValue: settings,
+    setValue: setSettings,
+    reset: resetSettings,
+  } = useLocalStorage<VoiceConfiguration>(
+    "voice-settings",
+    defaultConfiguration
+  );
+  const { devices, error, isLoading } = useMediaDevices(true);
 
   return (
     <div className={styles.container}>
       <div className={styles.control}>
         <div className={styles.label}>Voice Input:</div>
-        <VoiceInput />
+        <select
+          id="device"
+          name="device"
+          className={styles.mediaselect}
+          value={settings.inputDeviceId}
+          title="Select a device"
+          onChange={(e) =>
+            setSettings({ ...settings, inputDeviceId: e.target.value })
+          }
+        >
+          {isLoading && <option>Loading...</option>}
+          {error && <option>Error: {error}</option>}
+          {devices
+            .filter((device) => device.kind === "audioinput")
+            .map((device) => {
+              return (
+                <option key={device.deviceId} value={device.deviceId}>
+                  {device.label}
+                </option>
+              );
+            })}
+        </select>
       </div>
 
       <div className={styles.control}>
@@ -43,11 +58,11 @@ const VoiceSettings = () => {
           className={styles.textInput}
           value={settings.threshold}
           onChange={(e) =>
-            saveSettings({ ...settings, threshold: +e.target.value })
+            setSettings({ ...settings, threshold: +e.target.value })
           }
         />
       </div>
-      <div>
+      <div className={styles.control}>
         <div className={styles.label}>Silence Duration (in ms):</div>
         <input
           id="silence"
@@ -60,12 +75,12 @@ const VoiceSettings = () => {
           className={styles.textInput}
           value={settings.silence}
           onChange={(e) =>
-            saveSettings({ ...settings, silence: +e.target.value })
+            setSettings({ ...settings, silence: +e.target.value })
           }
         />
       </div>
 
-      <div>
+      <div className={styles.control}>
         <div className={styles.label}>Prefix Padding (in ms):</div>
         <input
           id="prefix"
@@ -78,16 +93,15 @@ const VoiceSettings = () => {
           className={styles.textInput}
           value={settings.prefix}
           onChange={(e) =>
-            saveSettings({ ...settings, prefix: +e.target.value })
+            setSettings({ ...settings, prefix: +e.target.value })
           }
         />
       </div>
       <div className={styles.buttonContainer}>
         <button
           className={styles.resetButton}
-          onClick={() =>
-            saveSettings({ threshold: 0.8, silence: 500, prefix: 300 })
-          }
+          onClick={() => resetSettings()}
+          title="Reset to default settings"
         >
           <GrPowerReset size={24} />
         </button>

@@ -2,6 +2,8 @@ export interface Settings {
   threshold: number;
   silence: number;
   prefix: number;
+  inputDeviceId: string;
+  outputDeviceId: string;
 }
 
 export const getSettings = (): Settings => {
@@ -9,14 +11,17 @@ export const getSettings = (): Settings => {
   if (settingsString) {
     return JSON.parse(settingsString);
   } else {
-    localStorage.setItem(
-      "voice-settings",
-      JSON.stringify({ threshold: 0.8, silence: 500, prefix: 300 })
-    );
-    return {
+    const defaultSettings: Settings = {
       threshold: 0.8,
       silence: 500,
       prefix: 300,
+      inputDeviceId: "default",
+      outputDeviceId: "default",
     };
+    localStorage.setItem(
+      "voice-settings",
+      JSON.stringify(defaultSettings)
+    );
+    return defaultSettings;
   }
 };

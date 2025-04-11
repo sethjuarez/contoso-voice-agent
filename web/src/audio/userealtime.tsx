@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { WS_ENDPOINT } from "@/store/endpoint"
 import { useLocalStorage } from "@/store/uselocalstorage";
 import type { User } from "@/store/user";

@@ -98,7 +98,7 @@ const Voice = () => {
     setCallState("ringing");
     buttonRef.current?.classList.add(styles.callRing);
     playSound();
-  }, [playSound]);
+  }, [playSound, setCallState]);
 
   const answerCall = async () => {
     console.log("Answering call");

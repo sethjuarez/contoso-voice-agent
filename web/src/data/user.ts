@@ -15,7 +15,7 @@ const defaultUser: Claim[] = [
     user_claims: [
       {
         typ: "name",
-        val: "Isaac Juarez",
+        val: "Seth Juarez",
       },
       {
         typ: "preferred_username",

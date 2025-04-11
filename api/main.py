@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         # remove all stray sockets
-        SessionManager.clear_sessions()
+        await SessionManager.clear_sessions()
 
 
 app = FastAPI(lifespan=lifespan)

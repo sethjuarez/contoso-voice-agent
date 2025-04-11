@@ -6,23 +6,23 @@ from typing import List
 from fastapi.responses import StreamingResponse
 from jinja2 import Environment, FileSystemLoader
 
+from openai import AsyncAzureOpenAI
 from pydantic import BaseModel
-from rtclient import RTLowLevelClient  # type: ignore
-from api.realtime import RealtimeVoiceClient
-from api.session import Message, RealtimeSession, SessionManager
+
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from azure.core.credentials import AzureKeyCredential
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from api.session import SessionManager
 from api.suggestions import SimpleMessage, create_suggestion, suggestion_requested
 from dotenv import load_dotenv
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
 from api.telemetry import init_tracing
+from api.voice import Message, RealtimeClient
 
 load_dotenv()
 
-AZURE_VOICE_ENDPOINT = os.getenv("AZURE_VOICE_ENDPOINT")
+AZURE_VOICE_ENDPOINT = os.getenv("AZURE_VOICE_ENDPOINT", "fake_endpoint")
 AZURE_VOICE_KEY = os.getenv("AZURE_VOICE_KEY", "fake_key")
 
 LOCAL_TRACING_ENABLED = os.getenv("LOCAL_TRACING_ENABLED", "true") == "true"
@@ -36,7 +36,7 @@ products = json.loads((base_path / "products.json").read_text())
 purchases = json.loads((base_path / "purchases.json").read_text())
 
 # jinja2 template environment
-env = Environment(loader=FileSystemLoader(base_path / "call"))
+env = Environment(loader=FileSystemLoader(base_path / "voice"))
 
 prompt = (Path(__file__).parent / "prompt.txt").read_text()
 
@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         # remove all stray sockets
-        SessionManager.clear_sessions()
+        await SessionManager.clear_sessions()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -113,13 +113,15 @@ async def chat_endpoint(websocket: WebSocket):
 async def voice_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
-        async with RTLowLevelClient(
-            url=AZURE_VOICE_ENDPOINT,
-            key_credential=AzureKeyCredential(AZURE_VOICE_KEY),
-            azure_deployment="gpt-4o-realtime-preview",
-        ) as rt:
+        client = AsyncAzureOpenAI(
+            azure_endpoint=AZURE_VOICE_ENDPOINT,
+            api_key=AZURE_VOICE_KEY,
+            api_version="2024-10-01-preview",
+        )
+        async with client.beta.realtime.connect(
+            model="gpt-4o-realtime-preview",
+        ) as realtime_client:
 
-            # get current messages for instructions
             chat_items = await websocket.receive_json()
             message = Message(**chat_items)
 
@@ -143,8 +145,12 @@ async def voice_endpoint(websocket: WebSocket):
                 products=products,
             )
 
-            session = RealtimeSession(RealtimeVoiceClient(rt, verbose=False), websocket)
-            await session.send_realtime_instructions(
+            session = RealtimeClient(
+                realtime=realtime_client,
+                client=websocket,
+            )
+
+            await session.update_realtime_session(
                 system_message,
                 threshold=settings["threshold"] if "threshold" in settings else 0.8,
                 silence_duration_ms=(
@@ -152,6 +158,7 @@ async def voice_endpoint(websocket: WebSocket):
                 ),
                 prefix_padding_ms=(settings["prefix"] if "prefix" in settings else 300),
             )
+
             tasks = [
                 asyncio.create_task(session.receive_realtime()),
                 asyncio.create_task(session.receive_client()),

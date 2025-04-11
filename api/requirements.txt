@@ -7,5 +7,4 @@ prompty[azure,serverless]==0.1.47
 opentelemetry-instrumentation
 azure-monitor-opentelemetry-exporter
 opentelemetry-instrumentation-fastapi
-./whl/rtclient-0.5.2-py3-none-any.whl
 azure-ai-evaluation

@@ -3,15 +3,8 @@
 import clsx from "clsx";
 import styles from "./voice.module.css";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FiPhone,
-  FiPhoneCall,
-  FiPhoneOff,
-  FiSettings,
-} from "react-icons/fi";
-import { WS_ENDPOINT } from "@/store/endpoint";
+import { FiPhone, FiPhoneCall, FiPhoneOff, FiSettings } from "react-icons/fi";
 import { Message } from "@/socket/types";
-import VoiceClient from "@/socket/voice-client";
 import { useSound } from "@/audio/useSound";
 import { ContextState, useContextStore } from "@/store/context";
 import usePersistStore from "@/store/usePersistStore";
@@ -25,17 +18,11 @@ import Content from "./content";
 import { useUserStore } from "@/store/user";
 import VoiceSettings from "./voicesettings";
 import { GrClose } from "react-icons/gr";
-import { getSettings } from "@/socket/settings";
-
+import { useRealtime } from "@/audio/userealtime";
 
 const Voice = () => {
   const contentRef = useRef<string[]>([]);
-
   const [settings, setSettings] = useState<boolean>(false);
-
-  const [callState, setCallState] = useState<"idle" | "ringing" | "call">(
-    "idle"
-  );
 
   const [suggestions, setSuggestions] = useState<boolean>(false);
   const suggestionsRef = useRef<boolean>(false);
@@ -50,9 +37,12 @@ const Voice = () => {
 
   const buttonRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
-  const voiceRef = useRef<VoiceClient | null>(null);
 
-  const user = usePersistStore(useUserStore, (state) => state.user);
+  const user = usePersistStore(useUserStore, (state) => state.user) || {
+    name: "Seth Juarez",
+    email: "seth.juarez@microsoft.com",
+    image: "/people/sethjuarez.jpg",
+  };
 
   const handleServerMessage = async (serverEvent: Message) => {
     const client = new ActionClient(stateRef.current!, contextRef.current!);
@@ -67,17 +57,19 @@ const Voice = () => {
           if (response && response.requested) {
             setSuggestions(true);
             suggestionsRef.current = true;
-            const task = await startSuggestionTask(user?.name || "Seth", messages);
+            const task = await startSuggestionTask(
+              user?.name || "Seth",
+              messages
+            );
             for await (const chunk of task) {
               contentRef.current.push(chunk);
               client.streamSuggestion(chunk);
             }
-            if (voiceRef.current) {
-              await voiceRef.current.sendUserMessage(
-                "The visual suggestions are ready."
-              );
-              await voiceRef.current.sendCreateResponse();
-            }
+            await sendRealtime({
+              type: "user",
+              payload: "The visual suggestions are ready.",
+            });
+            await sendRealtime({ type: "interrupt", payload: "" });
           }
         }
         break;
@@ -93,53 +85,8 @@ const Voice = () => {
     }
   };
 
-  const startRealtime = async () => {
-    if (voiceRef.current) {
-      await voiceRef.current.stop();
-      voiceRef.current = null;
-    }
-
-    if (!voiceRef.current) {
-      const client = new ActionClient(stateRef.current!, contextRef.current!);
-      const endpoint = WS_ENDPOINT.endsWith("/")
-        ? WS_ENDPOINT.slice(0, -1)
-        : WS_ENDPOINT;
-
-      voiceRef.current = new VoiceClient(
-        `${endpoint}/api/voice`,
-        handleServerMessage
-      );
-
-      const device = localStorage.getItem("selected-audio-device");
-      let deviceId: string | null = null;
-      if (device) {
-        const parsedDevice = JSON.parse(device);
-        console.log("Using device:", parsedDevice);
-        deviceId = parsedDevice.deviceId;
-      }
-      await voiceRef.current.start(deviceId);
-      await voiceRef.current.send({
-        type: "messages",
-        payload: JSON.stringify(client.retrieveMessages()),
-      });
-
-      const voiceSettings = getSettings();
-      const message = {
-        user: user?.name || "Seth",
-        ...voiceSettings,
-      }
-
-      await voiceRef.current.sendUserMessage(JSON.stringify(message));
-      await voiceRef.current.sendCreateResponse();
-    }
-  };
-
-  const stopRealtime = async () => {
-    if (voiceRef.current) {
-      await voiceRef.current.stop();
-      voiceRef.current = null;
-    }
-  };
+  const { startRealtime, stopRealtime, sendRealtime, callState, setCallState } =
+    useRealtime(user, new ActionClient(stateRef.current!, contextRef.current!), handleServerMessage);
 
   const toggleSettings = () => {
     setSettings(!settings);
@@ -149,6 +96,7 @@ const Voice = () => {
   const startCall = useCallback(async () => {
     console.log("Starting call");
     setCallState("ringing");
+    buttonRef.current?.classList.add(styles.callRing);
     playSound();
   }, [playSound]);
 

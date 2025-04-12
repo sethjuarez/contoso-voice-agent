@@ -15,13 +15,14 @@ from openai.types.beta.realtime.session_update_event import (
     SessionInputAudioTranscription,
     # SessionTool,
 )
-from openai.types.beta.realtime.realtime_server_event import (
+from openai.types.beta.realtime import (
     ErrorEvent,
     SessionCreatedEvent,
     SessionUpdatedEvent,
     ConversationCreatedEvent,
     ConversationItemCreatedEvent,
     ConversationItemInputAudioTranscriptionCompletedEvent,
+    ConversationItemInputAudioTranscriptionDeltaEvent,
     ConversationItemInputAudioTranscriptionFailedEvent,
     ConversationItemTruncatedEvent,
     ConversationItemDeletedEvent,
@@ -46,7 +47,7 @@ from openai.types.beta.realtime.realtime_server_event import (
     RateLimitsUpdatedEvent,
 )
 
-from openai.types.beta.realtime.realtime_client_event import (
+from openai.types.beta.realtime import (
     SessionUpdateEvent,
     InputAudioBufferAppendEvent,
     # InputAudioBufferCommitEvent,
@@ -58,7 +59,7 @@ from openai.types.beta.realtime.realtime_client_event import (
     # ResponseCancelEvent,
 )
 
-from openai.types.beta.realtime.conversation_item import (
+from openai.types.beta.realtime import (
     ConversationItem,
     ConversationItemContent,
 )
@@ -76,11 +77,14 @@ class RealtimeClient:
     Realtime client for handling websocket connections and messages.
     """
 
-    def __init__(self, realtime: AsyncRealtimeConnection, client: WebSocket):
+    def __init__(
+        self, realtime: AsyncRealtimeConnection, client: WebSocket, debug: bool = False
+    ):
         self.realtime: Union[AsyncRealtimeConnection, None] = realtime
         self.client: Union[WebSocket, None] = client
         self.response_queue: list[ConversationItemCreateEvent] = []
         self.active = True
+        self.debug = debug
 
     async def send_message(self, message: Message):
         if self.client is not None:
@@ -117,7 +121,7 @@ class RealtimeClient:
                 input_audio_transcription=SessionInputAudioTranscription(
                     model="whisper-1",
                 ),
-                voice="shimmer",
+                voice="sage",
                 instructions=instructions,
                 modalities=["text", "audio"],
             )
@@ -136,7 +140,7 @@ class RealtimeClient:
 
         while self.realtime is not None:
             async for event in self.realtime:
-                if "delta" not in event.type:
+                if "delta" not in event.type and self.debug:
                     print(event.type)
                 self.active = True
                 match event.type:
@@ -240,7 +244,7 @@ class RealtimeClient:
 
     @trace(name="conversation.item.input_audio_transcription.delta")
     async def _conversation_item_input_audio_transcription_delta(
-        self, event: ConversationItemInputAudioTranscriptionCompletedEvent
+        self, event: ConversationItemInputAudioTranscriptionDeltaEvent
     ):
         pass
 
@@ -325,12 +329,6 @@ class RealtimeClient:
                     await self.send_console(
                         Message(type="console", payload=output.model_dump_json())
                     )
-        if (
-            event.response.status_details is not None
-            and event.response.status_details.type == "cancelled"
-            and event.response.status_details.reason == "turn_detected"
-        ):
-            await self.send_console(Message(type="interrupt", payload="Turn Detected"))
 
         if len(self.response_queue) > 0 and self.realtime is not None:
             for item in self.response_queue:

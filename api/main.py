@@ -146,8 +146,7 @@ async def voice_endpoint(websocket: WebSocket):
             )
 
             session = RealtimeClient(
-                realtime=realtime_client,
-                client=websocket,
+                realtime=realtime_client, client=websocket, debug=LOCAL_TRACING_ENABLED
             )
 
             await session.update_realtime_session(

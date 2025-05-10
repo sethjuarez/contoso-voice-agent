@@ -1,0 +1,24 @@
+{
+  "name": "chat_response",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "context": {
+        "type": "string"
+      },
+      "response": {
+        "type": "string"
+      },
+      "call": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "context",
+      "response",
+      "call"
+    ],
+    "additionalProperties": false
+  }
+}

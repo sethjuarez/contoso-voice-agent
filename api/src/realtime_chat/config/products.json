@@ -1,0 +1,173 @@
+[
+  {
+    "id": 2,
+    "name": "Adventurer Pro Backpack",
+    "price": 90.0,
+    "category": "Backpacks",
+    "brand": "HikeMate",
+    "description": "Venture into the wilderness with the HikeMate's Adventurer Pro Backpack! Uniquely designed with ergonomic comfort in mind, this backpack ensures a steadfast journey no matter the mileage. It boasts a generous 40L capacity wrapped up in durable nylon fabric ensuring its long-lasting performance on even the most rugged pursuits. It's meticulously fashioned with multiple compartments and pockets for organized storage, hydration system compatibility, and adjustable padded shoulder straps all in a lightweight construction. The added features of a sternum strap and hip belt enhance stability without compromising on comfort. The Adventurer Pro Backpack also prioritizes your safety with its reflective accents for when night falls. This buoyant beauty does more than carry your essentials; it carries the promise of a stress-free adventure!",
+    "slug": "adventurer-pro-backpack",
+    "manual": "/manuals/product_info_2.md",
+    "images": [
+      "/images/2/0b0e0e52-e3bf-4bf7-b1e1-3989c91d51a9.png",
+      "/images/2/5b73df27-5275-4437-b7cf-45b1eee175fb.png",
+      "/images/2/6cc997c4-da5d-432c-91f7-216a21d7e690.png",
+      "/images/2/791d0836-e0ad-4b46-bc79-1abcf292b700.png",
+      "/images/2/93afa1a1-d234-409c-ac8e-e0b49dbe79a1.png"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "TrekReady Hiking Boots",
+    "price": 140.0,
+    "category": "Hiking Footwear",
+    "brand": "TrekReady",
+    "description": "Introducing the TrekReady Hiking Boots - stepping up your hiking game, one footprint at a time! Crafted from leather, these stylistic Trailmates are made to last. TrekReady infuses durability with its reinforced stitching and toe protection, making sure your journey is never stopped short. Comfort? They have that covered too! The boots are a haven with their breathable materials, cushioned insole, with padded collar and tongue; all nestled neatly within their lightweight design. As they say, it's what's inside that counts - so inside you'll find a moisture-wicking lining that quarantines stank and keeps your feet fresh as that mountaintop breeze. Remember the fear of slippery surfaces? With these boots, you can finally tell it to 'take a hike'! Their shock-absorbing midsoles and excellent traction capabilities promise stability at your every step. Beautifully finished in a traditional lace-up system, every adventurer deserves a pair of TrekReady Hiking Boots. Hike more, worry less!",
+    "slug": "trekready-hiking-boots",
+    "manual": "/manuals/product_info_4.md",
+    "images": [
+      "/images/4/0889d8c0-bb85-4b77-a749-15682f693c49.png",
+      "/images/4/37204d04-e4bb-4140-811e-1f53b135f2ea.png",
+      "/images/4/8076ecb5-4e4d-4958-8b77-e0bad466cc8a.png",
+      "/images/4/8705bdcd-85f6-44c1-b043-84b4b8f44493.png",
+      "/images/4/8c9044bf-e9cb-4c15-a977-934533055792.png"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "CozyNights Sleeping Bag",
+    "price": 100.0,
+    "category": "Sleeping Bags",
+    "brand": "CozyNights",
+    "description": "Embrace the great outdoors in any season with the lightweight CozyNights Sleeping Bag! This durable three-season bag is superbly designed to give hikers, campers, and backpackers comfort and warmth during spring, summer, and fall. With a compact design that folds down into a convenient stuff sack, you can whisk it away on any adventure without a hitch. The sleeping bag takes comfort seriously, featuring a handy hood, ample room and padding, and a reliable temperature rating. Crafted from high-quality polyester, it ensures long-lasting use and can even be zipped together with another bag for shared comfort. Whether you're gazing at stars or catching a quick nap between trails, the CozyNights Sleeping Bag makes it a treat. Don't just sleep\u2014 dream with CozyNights.",
+    "slug": "cozynights-sleeping-bag",
+    "manual": "/manuals/product_info_7.md",
+    "images": [
+      "/images/7/088c709c-cf18-4253-8664-3e474b94635c.png",
+      "/images/7/1a8555cc-a1e4-4fae-9624-8eacfbe64bc8.png",
+      "/images/7/45e09e69-17c4-47d9-a501-2f8177e34349.png",
+      "/images/7/5df18ce1-7751-4100-9996-279ba57265f6.png",
+      "/images/7/d4eb8b2d-ef94-4aea-a76e-32f1bdb0457c.png"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "TrailBlaze Hiking Pants",
+    "price": 75.0,
+    "category": "Hiking Clothing",
+    "brand": "MountainStyle",
+    "description": "Meet the TrailBlaze Hiking Pants from MountainStyle, the stylish khaki champions of the trails. These are not just pants; they're your passport to outdoor adventure. Crafted from high-quality nylon fabric, these dapper troopers are lightweight and fast-drying, with a water-resistant armor that laughs off light rain. Their breathable design whisks away sweat while their articulated knees grant you the flexibility of a mountain goat. Zippered pockets guard your essentials, making them a hiker's best ally. Designed with durability for all your trekking trials, these pants come with a comfortable, ergonomic fit that will make you forget you're wearing them. Sneak a peek, and you are sure to be tempted by the sleek allure that is the TrailBlaze Hiking Pants. Your outdoors wardrobe wouldn't be quite complete without them.",
+    "slug": "trailblaze-hiking-pants",
+    "manual": "/manuals/product_info_10.md",
+    "images": [
+      "/images/10/024934d4-5630-4ec2-a439-29bd7a9f28a0.png",
+      "/images/10/0fc43560-c387-4366-a914-91308186344d.png",
+      "/images/10/273b611f-dd6f-4b9f-b329-e48fe7ff39f9.png",
+      "/images/10/5a8b7c17-8fa9-450d-83ee-99b2cc9c8685.png",
+      "/images/10/9383b6d4-da4d-4f99-8071-4a0e6e1d219d.png",
+      "/images/10/d950d148-3fd7-45f3-8eae-1ac83a60c880.png"
+    ]
+  },
+  {
+    "id": 11,
+    "name": "TrailWalker Hiking Shoes",
+    "price": 110.0,
+    "category": "Hiking Footwear",
+    "brand": "TrekReady",
+    "description": "Meet the TrekReady TrailWalker Hiking Shoes, the ideal companion for all your outdoor adventures. Constructed with synthetic leather and breathable mesh, these shoes are tough as nails yet surprisingly airy. Their cushioned insoles offer fabulous comfort for long hikes, while the supportive midsoles and traction outsoles with multidirectional lugs ensure stability and excellent grip. A quick-lace system, padded collar and tongue, and reflective accents make these shoes a dream to wear. From combating rough terrain with the reinforced toe cap and heel, to keeping off trail debris with the protective mudguard, the TrailWalker Hiking Shoes have you covered. These waterproof warriors are made to endure all weather conditions. But they're not just about being rugged, they're light as a feather too, minimizing fatigue during epic hikes. Each pair can be customized for a perfect fit with removable insoles and availability in multiple sizes and widths. Navigate hikes comfortably and confidently with the TrailWalker Hiking Shoes. Adventure, here you come!",
+    "slug": "trailwalker-hiking-shoes",
+    "manual": "/manuals/product_info_11.md",
+    "images": [
+      "/images/11/10b59349-0c6c-4d0b-a459-8a20037a6c2d.png",
+      "/images/11/27c5ac9a-6a43-4f9e-81ca-9abdcddee1d1.png",
+      "/images/11/5abf43e4-85b1-460f-bb30-563fb623d14e.png",
+      "/images/11/997a0954-3952-401b-869d-ff16fb97d0f2.png",
+      "/images/11/c5ee06a6-5caf-46ed-b6c2-2c312a8ae677.png"
+    ]
+  },
+  {
+    "id": 12,
+    "name": "TrekMaster Camping Chair",
+    "price": 50.0,
+    "category": "Camping Tables",
+    "brand": "CampBuddy",
+    "description": "Gravitate towards comfort with the TrekMaster Camping Chair from CampBuddy. This trusty outdoor companion boasts sturdy construction using high-quality materials that promise durability and enjoyment for seasons to come. Impeccably lightweight and portable, it's designed to be your go-to seat whether you're camping, at a picnic, cheering at a sporting event, or simply relishing in your backyard pleasures. Beyond its foldable design ensuring compact storage and easy transportation, its ergonomic magic is in the details. An adjustable recline, padded seat and backrest, integrated cup holder, and side pockets ensure the greatest outdoor comfort. Weather resistant, easy to clean, and capable of supporting diverse body types, this versatile chair also comes with a carry bag, ready for your next adventure.",
+    "slug": "trekmaster-camping-chair",
+    "manual": "/manuals/product_info_12.md",
+    "images": [
+      "/images/12/1fc8a3a0-296b-4cee-b9eb-3d5b62636e18.png",
+      "/images/12/20392650-1114-49b6-9626-4b760cb6e80e.png",
+      "/images/12/47433b71-f823-4865-8ed7-fa50b3f23ad6.png",
+      "/images/12/5359d889-47d1-4336-aa3e-79d135d4f733.png",
+      "/images/12/95a02ac2-cccb-471a-914c-fd4d5b6f834e.png"
+    ]
+  },
+  {
+    "id": 13,
+    "name": "PowerBurner Camping Stove",
+    "price": 100.0,
+    "category": "Camping Stoves",
+    "brand": "PowerBurner",
+    "description": "Unleash your inner explorer with the PowerBurner Dual Burner Camping Stove. It's designed for the adventurous heart, with sturdy construction and a high heat output that makes boiling and cooking a breeze. This stove isn't just about strength\u2014it's got finesse too. With adjustable flame control, you can simmer, saut\u00e9, or sizzle with absolute precision. Its compact design and integrated carrying handle make transportation effortless. Moreover, it's crafted to defy the elements, boasting a wind-resistant exterior and piezo ignition system for quick, reliable starts. And when the cooking's done, its removable grates make cleanup swift and easy. Rugged, versatile and reliable, the PowerBurner marks a perfect blend of practicality and performance. So, why wait? Let's turn up the heat on your outdoor culinary adventures today.",
+    "slug": "powerburner-camping-stove",
+    "manual": "/manuals/product_info_13.md",
+    "images": [
+      "/images/13/1b8557cf-dede-4a88-bfc7-ae2edd01fdbe.png",
+      "/images/13/34421e0a-2913-41a0-a91e-db0e0eee3ae6.png",
+      "/images/13/5daee11a-b229-47fa-afd3-777cce801e9a.png",
+      "/images/13/865112e9-d986-46c6-a871-524d6bdb96c7.png",
+      "/images/13/e6e34709-d739-4d25-9ec7-d901d61c425e.png"
+    ]
+  },
+  {
+    "id": 14,
+    "name": "MountainDream Sleeping Bag",
+    "price": 130.0,
+    "category": "Sleeping Bags",
+    "brand": "MountainDream",
+    "description": "Meet the MountainDream Sleeping Bag: your new must-have companion for every outdoor adventure. Designed to handle 3-season camping with ease, it comes equipped with a premium synthetic insulation that will keep you cozy even when temperatures fall down to 15\u00b0F! Sporting a durable water-resistant nylon shell and soft breathable polyester lining, this bag doesn't sacrifice comfort for toughness. The star of the show is the contoured mummy shape that not only provides optimal heat retention but also cuts down on the weight. A smooth, snag-free YKK zipper with a unique anti-snag design allows for hassle-free operation, while the adjustable hood and full-length zipper baffle work together to ensure you stay warm all night long. Need to bring along some essentials? Not to worry! There's an interior pocket just for that. And when it's time to pack up? Just slip it into the included compression sack for easy storage and transport. Whether you're a backpacking pro or a camping novice, the MountainDream Sleeping Bag is the perfect blend of durability, warmth, and comfort that you've been looking for.",
+    "slug": "mountaindream-sleeping-bag",
+    "manual": "/manuals/product_info_14.md",
+    "images": [
+      "/images/14/0f53cfca-7fa8-4719-8b52-08cac3805dfc.png",
+      "/images/14/6fe35e2a-09cc-4324-8031-8a9591cf803e.png",
+      "/images/14/b9fc22f2-13a9-43a7-9ba9-2ed16f624502.png",
+      "/images/14/c94159a2-c070-4676-8a4b-5ccb5401678a.png",
+      "/images/14/cfa0d3c7-d5bc-4010-abf0-4a7ce0026f3b.png"
+    ]
+  },
+  {
+    "id": 15,
+    "name": "SkyView 2-Person Tent",
+    "price": 200.0,
+    "category": "Tents",
+    "brand": "OutdoorLiving",
+    "description": "Introducing the OutdoorLiving SkyView 2-Person Tent, a perfect companion for your camping and hiking adventures. This tent offers a spacious interior that houses two people comfortably, with room to spare. Crafted from durable waterproof materials to shield you from the elements, it is the fortress you need in the wild. Setup is a breeze thanks to its intuitive design and color-coded poles, while two large doors allow for easy access. Stay organized with interior pockets, and store additional gear in its two vestibules. The tent also features mesh panels for effective ventilation, and it comes with a rainfly for extra weather protection. Light enough for on-the-go adventurers, it packs compactly into a carrying bag for seamless transportation. Reflective guy lines ensure visibility at night for added safety, and the tent stands freely for versatile placement. Experience the reliability of double-stitched seams that guarantee increased durability, and rest easy under the stars with OutdoorLiving's SkyView 2-Person Tent. It's not just a tent; it's your home away from home.",
+    "slug": "skyview-2-person-tent",
+    "manual": "/manuals/product_info_15.md",
+    "images": [
+      "/images/15/4e94736c-16ed-42cd-91ac-cda8f770e71a.png",
+      "/images/15/650446c9-9816-4989-94cf-0c93cc3ba0d0.png",
+      "/images/15/97c8f4ec-d2d4-4041-9d39-994823c47e45.png",
+      "/images/15/de767450-ad37-4e43-b742-77e8c8cff7d5.png",
+      "/images/15/f76473ea-6303-4f1a-adc5-1f63bc818555.png"
+    ]
+  },
+  {
+    "id": 17,
+    "name": "RainGuard Hiking Jacket",
+    "price": 110.0,
+    "category": "Hiking Clothing",
+    "brand": "MountainStyle",
+    "description": "Introducing the MountainStyle RainGuard Hiking Jacket - the ultimate solution for weatherproof comfort during your outdoor undertakings! Designed with waterproof, breathable fabric, this jacket promises an outdoor experience that's as dry as it is comfortable. The rugged construction assures durability, while the adjustable hood provides a customizable fit against wind and rain. Featuring multiple pockets for safe, convenient storage and adjustable cuffs and hem, you can tailor the jacket to suit your needs on-the-go. And, don't worry about overheating during intense activities - it's equipped with ventilation zippers for increased airflow. Reflective details ensure visibility even during low-light conditions, making it perfect for evening treks. With its lightweight, packable design, carrying it inside your backpack requires minimal effort. With options for men and women, the RainGuard Hiking Jacket is perfect for hiking, camping, trekking and countless other outdoor adventures. Don't let the weather stand in your way - embrace the outdoors with MountainStyle RainGuard Hiking Jacket!",
+    "slug": "rainguard-hiking-jacket",
+    "manual": "/manuals/product_info_17.md",
+    "images": [
+      "/images/17/07203c6a-9eb6-4e6f-bc8f-d6ad43ff2cee.png",
+      "/images/17/40b992fa-190e-46d6-87f1-2a6583f66a05.png",
+      "/images/17/b77e9f01-195b-4870-bc86-c4f988bc71e8.png",
+      "/images/17/c2324487-ebe5-4872-9083-12e5f4b574e4.png",
+      "/images/17/f54405f4-5194-4586-9be6-9e22ed09a24e.png"
+    ]
+  }
+]

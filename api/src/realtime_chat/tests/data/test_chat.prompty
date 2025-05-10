@@ -1,0 +1,31 @@
+name: Test Chat Template
+format: yaml
+version: "0.2"
+
+processors:
+  - azure_openai
+
+parameters:
+  customer: string
+  question: string
+  context: string[]
+  image: string|null
+
+template: |
+  {% if context %}
+  Previous conversation:
+  {% for c in context %}
+  {{ c }}
+  {% endfor %}
+  {% endif %}
+
+  {{ customer }} asks: {{ question }}
+
+  {% if image %}
+  Image attached: {{ image }}
+  {% endif %}
+
+output:
+  response: string
+  context: string
+  call: number

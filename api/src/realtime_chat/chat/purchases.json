@@ -1,0 +1,22 @@
+    [
+      {
+        "id": 18,
+        "name": "TrekStar Hiking Sandals",
+        "price": 70.0,
+        "category": "Hiking Footwear",
+        "brand": "TrekReady",
+        "description": "Meet the TrekStar Hiking Sandals from TrekReady \u2013 the ultimate trail companion for your feet. Designed for comfort and durability, these lightweight sandals are perfect for those who prefer to see the world from a hiking trail. They feature adjustable straps for a snug, secure fit, perfect for adapting to the contours of your feet. With a breathable design, your feet will stay cool and dry, escaping the discomfort of sweaty hiking boots on long summer treks. The deep tread rubber outsole ensures excellent traction on any terrain, while the cushioned footbed promises enhanced comfort with every step. For those wild and unpredictable trails, the added toe protection and shock-absorbing midsole protect your feet from rocky surprises. Ingeniously, the removable insole makes for easy cleaning and maintenance, extending the lifespan of your sandals. Available in various sizes and a handsome brown color, the versatile TrekStar Hiking Sandals are just as comfortable on a casual walk in the park as they are navigating rocky slopes. Explore more with TrekReady!",
+        "slug": "trekstar-hiking-sandals",
+        "manual": "/manuals/product_info_18.md"
+      },
+      {
+        "id": 15,
+        "name": "SkyView 2-Person Tent",
+        "price": 200.0,
+        "category": "Tents",
+        "brand": "OutdoorLiving",
+        "description": "Introducing the OutdoorLiving SkyView 2-Person Tent, a perfect companion for your camping and hiking adventures. This tent offers a spacious interior that houses two people comfortably, with room to spare. Crafted from durable waterproof materials to shield you from the elements, it is the fortress you need in the wild. Setup is a breeze thanks to its intuitive design and color-coded poles, while two large doors allow for easy access. Stay organized with interior pockets, and store additional gear in its two vestibules. The tent also features mesh panels for effective ventilation, and it comes with a rainfly for extra weather protection. Light enough for on-the-go adventurers, it packs compactly into a carrying bag for seamless transportation. Reflective guy lines ensure visibility at night for added safety, and the tent stands freely for versatile placement. Experience the reliability of double-stitched seams that guarantee increased durability, and rest easy under the stars with OutdoorLiving's SkyView 2-Person Tent. It's not just a tent; it's your home away from home.",
+        "slug": "skyview-2-person-tent",
+        "manual": "/manuals/product_info_15.md"
+      }
+    ]

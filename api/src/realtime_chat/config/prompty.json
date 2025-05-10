@@ -1,0 +1,7 @@
+{
+  "default": {
+    "type": "azure_openai",
+    "azure_endpoint": "${env:AZURE_OPENAI_ENDPOINT}",
+    "api_key": "${env:AZURE_OPENAI_API_KEY}"
+  }
+}

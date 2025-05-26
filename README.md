@@ -122,6 +122,8 @@ graph TD
 
 ## Development and Deployment
 
+For comprehensive setup instructions, including environment configuration, local development, and deployment details, please refer to the [SETUP.md](SETUP.md) guide.
+
 ### Local Development
 
 1. Backend:

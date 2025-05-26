@@ -72,7 +72,7 @@ graph TD
 ### Backend (api/)
 
 - **FastAPI Application**: Main backend service with WebSocket support
-- **Session Management**: Maintains conversation context and user state
+- **Session Management**: Maintains the WebSocket connection to the web client and the Realtime API client
 - **AI Integration**: Connects to Azure OpenAI for natural language processing
 - **Voice Processing**: Realtime API integration for voice conversations
 - **Product Suggestions**: AI-powered product recommendation engine
@@ -138,6 +138,9 @@ graph TD
    npm run dev
    ```
 
+3. VS Code:
+   The project includes VS Code launch configurations. You can simply press F5 in VS Code to start debugging both frontend and backend components simultaneously.
+
 ### Deployment
 
 Both frontend and backend include Dockerfiles for containerized deployment:
@@ -155,4 +158,12 @@ Required environment variables:
 
 ## Contributing
 
-Please refer to the project documentation for contribution guidelines.
+Guidelines for contributing to this project:
+
+1. **Fork & Pull Request**: Fork the repository and create pull requests for contributions.
+2. **Coding Standards**: Follow the existing coding style and patterns in the repository.
+3. **Testing**: Add/update tests for any new features or bug fixes.
+4. **Documentation**: Update documentation to reflect any changes.
+5. **Review Process**: All submissions require review before being merged.
+6. **Issue First**: For major changes, open an issue for discussion before submitting a PR.
+7. **Security**: Report security vulnerabilities privately to the repository owners.
